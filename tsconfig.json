@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "target": "ES2015",
+    "strict": true,
+    "allowJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "noEmit": true
+  }
+}

@@ -7,6 +7,7 @@
   },
   "sideEffects": false,
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "test": "vitest"
   },
   "repository": {
@@ -31,6 +32,7 @@
   "homepage": "https://github.com/sergiodxa/web-oidc#readme",
   "devDependencies": {
     "@edge-runtime/vm": "^2.1.2",
+    "typescript": "^5.0.4",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.30.1"
   }
