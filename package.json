@@ -1,0 +1,32 @@
+{
+  "name": "web-oidc",
+  "version": "0.0.0",
+  "description": "An OpenID Connect client built using only Web APIs",
+  "engines": {
+    "node": ">=14"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sergiodxa/web-oidc.git"
+  },
+  "keywords": [
+    "openid-connect",
+    "oidc",
+    "web",
+    "apis"
+  ],
+  "author": {
+    "name": "Sergio Xalambrí",
+    "url": "https://sergiodxa.com",
+    "email": "hello@sergiodxa.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sergiodxa/web-oidc/issues"
+  },
+  "homepage": "https://github.com/sergiodxa/web-oidc#readme"
+}
