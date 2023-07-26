@@ -59,21 +59,21 @@ let url = client.authorizationUrl({ state: "random" });
 
 This will generate a URL that you can redirect the user to start the flow.
 
----
+### Fetch user info
 
-You can use the `Client#userinfo` method to fetch the user's profile.
+You can use the `Client#userinfo` method to fetch the user's profile from the IdP.
 
 ```ts
 let userinfo = await client.userinfo("accessToken");
 ```
 
----
+### Use refresh tokens
 
-You can also refresh the access token with one line:
+If you're keeping the access and refresh tokens around, you can use the `Client#refresh` method to get a new access token when it expires.
 
 ```ts
-let { accessToken, refreshToken, extraParams } = await client.refreshToken(
-  session.get("refreshToken")
+let { accessToken, refreshToken, extraParams } = await client.refresh(
+  oldAccessToken
 );
 ```
 
@@ -113,7 +113,7 @@ export async function action({ request }: DataFunctionArgs) {
 }
 ```
 
-## Use with Hono
+### Use with Hono
 
 If you're building a Hono application, this packages exports a middleware you can use.
 
@@ -144,3 +144,7 @@ hono.get("/profile", oidc.requiresAuth, async (ctx) => {
   return ctx.html(`<h1>Hello ${user.name}</h1>`);
 });
 ```
+
+## Author
+
+- [Sergio Xalambrí](https://sergiodxa.com)
