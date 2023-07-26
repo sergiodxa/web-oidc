@@ -75,3 +75,37 @@ let { accessToken, refreshToken, extraParams } = await client.refreshToken(
 );
 ```
 
+### Use with Remix Auth
+
+If you're building a Remix application and using Remix Auth, this packages exports a strategy you can use.
+
+```ts
+import { OIDCStrategy } from "web-oidc/remix";
+
+authenticator.use(
+  new OIDCStrategy(
+    {
+      issuer: "https://auth.company.tld",
+      clientID: "CLIENT_ID",
+      clientSecret: "CLIENT_SECRET",
+      redirectUri: "https://company.tld/auth/callback",
+      responseType: "code id_token",
+    },
+    async ({ profile, accessToken, refreshToken, extraParams }) => {
+      return { profile, accessToken, refreshToken };
+    }
+  )
+);
+```
+
+You can then use this strategy in your routes.
+
+```ts
+export async function action({ request }: DataFunctionArgs) {
+  return await authenticator.authenticate("oidc", request, {
+    successRedirect: "/home",
+    failureRedirect: "/login",
+  });
+}
+```
+
