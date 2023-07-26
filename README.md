@@ -2,6 +2,8 @@
 
 An OpenID Connect client for web applications built completely using standard Web APIs.
 
+> This package is still a work in progress.
+
 ## Installation
 
 ```sh
