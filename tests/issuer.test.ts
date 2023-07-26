@@ -61,7 +61,9 @@ describe(Issuer.name, () => {
   });
 
   test("fetches issuer metadata from auth0.com", async () => {
-    let issuer = await Issuer.discover("https://auth.auth0.com");
+    let issuer = await Issuer.discover(
+      "https://auth.auth0.com/.well-known/openid-configuration"
+    );
     expect(issuer.metadata).toEqual({
       claim_types_supported: ["normal"],
       claims_parameter_supported: false,
