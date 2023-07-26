@@ -33,11 +33,11 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@edge-runtime/vm": "^2.1.2",
+    "@edge-runtime/vm": "^3.0.4",
     "remix-auth": "^3.5.0",
     "typescript": "^5.1.6",
     "vite-tsconfig-paths": "^4.2.0",
-    "vitest": "^0.30.1"
+    "vitest": "^0.33.0"
   },
   "sideEffects": false,
   "engines": {
