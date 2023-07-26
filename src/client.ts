@@ -117,6 +117,43 @@ export class Client {
 
     return await UserInfoSchema.promise().parse(response.json());
   }
+
+  async refresh(refreshToken: string) {
+    let body = new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: this.#options.clientID,
+      refresh_token: refreshToken,
+    });
+
+    if (this.#options.clientSecret) {
+      body.set("client_secret", this.#options.clientSecret);
+    }
+
+    let issuer = this.#issuer.metadata;
+    issuer.token_endpoint;
+
+    let response = await fetch(issuer.token_endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    });
+
+    if (!response.ok) throw new Error("Failed to refresh token.");
+
+    return z
+      .object({
+        access_token: z.string(),
+        expires_in: z.literal(86400),
+        scope: z
+          .string()
+          .transform((scope) => scope.split(" "))
+          .pipe(ScopeSchema.array()),
+        id_token: z.string(),
+        token_type: z.literal("Bearer"),
+      })
+      .promise()
+      .parse(response.json());
+  }
 }
 
 const UserInfoSchema = z
@@ -167,10 +204,17 @@ const ResponseTypeSchema = z.enum([
 
 type ResponseType = z.infer<typeof ResponseTypeSchema>;
 
+const ScopeSchema = z.enum([
+  "openid",
+  "email",
+  "profile",
+  "address",
+  "phone",
+  "offline_access",
+]);
+
 const AuthenticationRequestParamsSchema = z.object({
-  scope: z
-    .enum(["openid", "email", "profile", "address", "phone", "offline_access"])
-    .array()
+  scope: ScopeSchema.array()
     .refine((scopes) => scopes.includes("openid"), {
       message: "openid scope is required",
     })
