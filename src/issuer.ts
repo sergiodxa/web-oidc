@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Client, ClientOptions } from "./client";
 
 const ISSUER_DEFAULTS: Partial<Metadata> = {
   claim_types_supported: ["normal"],
@@ -30,6 +31,10 @@ export class Issuer {
 
   get metadata() {
     return Object.freeze(structuredClone(this.config));
+  }
+
+  client(options: ClientOptions) {
+    return new Client(this, options);
   }
 
   static async discover(uri: string | URL) {
