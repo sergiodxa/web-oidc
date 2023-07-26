@@ -29,7 +29,7 @@ import { Client } from "web-oidc";
 let client = new Client(issuer, {
   clientID: "CLIENT_ID",
   clientSecret: "CLIENT_SECRET",
-  redirectUri: "https://company.tld/auth/callback",
+  redirectUri: "https://www.company.tld/auth/callback",
   responseType: "code id_token",
 });
 ```
@@ -44,7 +44,7 @@ const issuer = await Issuer.discover("https://auth.company.tld");
 let client = issuer.client({
   clientID: "CLIENT_ID",
   clientSecret: "CLIENT_SECRET",
-  redirectUri: "https://company.tld/auth/callback",
+  redirectUri: "https://www.company.tld/auth/callback",
   responseType: "code id_token",
 });
 ```
@@ -90,7 +90,7 @@ authenticator.use(
       issuer: "https://auth.company.tld",
       clientID: "CLIENT_ID",
       clientSecret: "CLIENT_SECRET",
-      redirectUri: "https://company.tld/auth/callback",
+      redirectUri: "https://www.company.tld/auth/callback",
       responseType: "code id_token",
     },
     async ({ profile, accessToken, refreshToken, extraParams }) => {
@@ -113,3 +113,34 @@ export async function action({ request }: DataFunctionArgs) {
 }
 ```
 
+## Use with Hono
+
+If you're building a Hono application, this packages exports a middleware you can use.
+
+```ts
+import { oidc, getOIDC } from "web-oidc/hono";
+
+let hono = new Hono();
+
+hono.use(
+  "*",
+  oidc({
+    issuer: "https://auth.company.tld",
+    clientID: "CLIENT_ID",
+    clientSecret: "CLIENT_SECRET",
+    redirectUri: "https://www.company.tld/auth/callback",
+    responseType: "code id_token",
+  })
+);
+
+hono.get("/", async (ctx) => {
+  let isAuthenticated = await oidc.isAuthenticated(ctx);
+  if (isAuthenticated) return ctx.redirect("/profile");
+  return ctx.html("<h1>Hello Hono</h1>");
+});
+
+hono.get("/profile", oidc.requiresAuth, async (ctx) => {
+  let user = oidc.user(ctx);
+  return ctx.html(`<h1>Hello ${user.name}</h1>`);
+});
+```
