@@ -98,6 +98,8 @@ authenticator.use(
 );
 ```
 
+The `issuer` can be a string or URL similar to `Issuer.discover`, it could also be a `Issuer` instance if you already have one.
+
 You can then use this strategy in your routes.
 
 ```ts
