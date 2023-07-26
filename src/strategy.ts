@@ -9,7 +9,7 @@ import {
   type SessionData,
   redirect,
 } from "@remix-run/server-runtime";
-import { type ClientOptions } from "./client";
+import { Client, type ClientOptions } from "./client";
 
 interface OIDCStrategyVerifyOptions {}
 
@@ -19,10 +19,10 @@ export class OIDCStrategy<User> extends Strategy<
 > {
   name = "oidc";
 
+  private issuerPromise?: Promise<Issuer>;
+
   constructor(
-    protected options: ClientOptions & {
-      issuer: Issuer | string | URL;
-    },
+    protected options: ClientOptions & { issuer: Issuer | string | URL },
     verify: StrategyVerifyCallback<User, OIDCStrategyVerifyOptions>
   ) {
     super(verify);
@@ -33,15 +33,36 @@ export class OIDCStrategy<User> extends Strategy<
     sessionStorage: SessionStorage<SessionData, SessionData>,
     options: AuthenticateOptions
   ): Promise<User> {
-    let issuer =
-      this.options.issuer instanceof Issuer
-        ? this.options.issuer
-        : await Issuer.discover(this.options.issuer);
+    let client = await this.client;
 
-    let client = issuer.client(this.options);
+    let session = await sessionStorage.getSession(
+      request.headers.get("cookie")
+    );
 
-    let url = client.authorizationUrl({ state: "random" });
+    let state = crypto.randomUUID();
 
-    throw redirect(url.toString());
+    session.set("oidc:state", state);
+
+    let url = client.authorizationUrl({ state });
+
+    throw redirect(url.toString(), {
+      headers: { "set-cookie": await sessionStorage.commitSession(session) },
+    });
+  }
+
+  get issuer() {
+    if (this.issuerPromise) return this.issuerPromise;
+
+    if (this.options.issuer instanceof Issuer) {
+      this.issuerPromise = Promise.resolve(this.options.issuer);
+      return this.issuerPromise;
+    }
+
+    this.issuerPromise = Issuer.discover(this.options.issuer);
+    return this.issuerPromise;
+  }
+
+  get client() {
+    return this.issuer.then((issuer) => issuer.client(this.options));
   }
 }
