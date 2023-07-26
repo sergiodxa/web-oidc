@@ -3,7 +3,6 @@ import { setCookie, getCookie } from "hono/cookie";
 
 import type { ClientOptions, Client, UserInfo } from "./client";
 import { Issuer } from "./issuer";
-import { z } from "zod";
 import { TokenSetValue } from "./token-set";
 
 interface OIDCMiddlewareOptions extends ClientOptions {
