@@ -1,10 +1,15 @@
 import {
-  AuthenticateOptions,
+  type AuthenticateOptions,
   Strategy,
-  StrategyVerifyCallback,
+  type StrategyVerifyCallback,
 } from "remix-auth";
 import { Issuer } from "./issuer";
-import { SessionStorage, SessionData } from "@remix-run/server-runtime";
+import {
+  type SessionStorage,
+  type SessionData,
+  redirect,
+} from "@remix-run/server-runtime";
+import { type ClientOptions } from "./client";
 
 interface OIDCStrategyVerifyOptions {}
 
@@ -15,7 +20,9 @@ export class OIDCStrategy<User> extends Strategy<
   name = "oidc";
 
   constructor(
-    protected issuer: Issuer | string | URL,
+    protected options: ClientOptions & {
+      issuer: Issuer | string | URL;
+    },
     verify: StrategyVerifyCallback<User, OIDCStrategyVerifyOptions>
   ) {
     super(verify);
@@ -27,10 +34,14 @@ export class OIDCStrategy<User> extends Strategy<
     options: AuthenticateOptions
   ): Promise<User> {
     let issuer =
-      this.issuer instanceof Issuer
-        ? this.issuer
-        : await Issuer.discover(this.issuer);
+      this.options.issuer instanceof Issuer
+        ? this.options.issuer
+        : await Issuer.discover(this.options.issuer);
 
-    throw new Error("Method not implemented.");
+    let client = issuer.client(this.options);
+
+    let url = client.authorizationUrl({ state: "random" });
+
+    throw redirect(url.toString());
   }
 }
