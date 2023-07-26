@@ -9,6 +9,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "edge-runtime",
-    setupFiles: ["./tests/setup.ts"],
+    setupFiles: ["./vitest.setup.ts"],
   },
 });
