@@ -13,6 +13,11 @@ import { Client, type ClientOptions } from "./client";
 
 interface OIDCStrategyVerifyOptions {}
 
+interface OIDCStrategyOptions extends ClientOptions {
+  issuer: Issuer | string | URL;
+  sessionKeys?: { state?: string };
+}
+
 export class OIDCStrategy<User> extends Strategy<
   User,
   OIDCStrategyVerifyOptions
@@ -22,7 +27,7 @@ export class OIDCStrategy<User> extends Strategy<
   private issuerPromise?: Promise<Issuer>;
 
   constructor(
-    protected options: ClientOptions & { issuer: Issuer | string | URL },
+    protected options: OIDCStrategyOptions,
     verify: StrategyVerifyCallback<User, OIDCStrategyVerifyOptions>
   ) {
     super(verify);
@@ -39,15 +44,19 @@ export class OIDCStrategy<User> extends Strategy<
       request.headers.get("cookie")
     );
 
-    let state = crypto.randomUUID();
+    if (request.method.toLowerCase() === "post") {
+      let state = crypto.randomUUID();
 
-    session.set("oidc:state", state);
+      session.set(this.options.sessionKeys?.state ?? "oidc:state", state);
 
-    let url = client.authorizationUrl({ state });
+      let url = client.authorizationUrl({ state });
 
-    throw redirect(url.toString(), {
-      headers: { "set-cookie": await sessionStorage.commitSession(session) },
-    });
+      throw redirect(url.toString(), {
+        headers: { "set-cookie": await sessionStorage.commitSession(session) },
+      });
+    }
+
+    throw new Error("Not implemented");
   }
 
   get issuer() {
