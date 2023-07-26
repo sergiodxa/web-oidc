@@ -58,4 +58,4 @@ const TokenSetValueSchema = z
   })
   .passthrough();
 
-type TokenSetValue = z.infer<typeof TokenSetValueSchema>;
+export type TokenSetValue = z.infer<typeof TokenSetValueSchema>;

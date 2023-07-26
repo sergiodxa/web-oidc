@@ -189,7 +189,7 @@ const UserInfoSchema = z
   })
   .passthrough();
 
-type UserInfo = z.infer<typeof UserInfoSchema>;
+export type UserInfo = z.infer<typeof UserInfoSchema>;
 
 const ResponseTypeSchema = z.enum([
   "code",

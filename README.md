@@ -120,9 +120,9 @@ If you're building a Hono application, this packages exports a middleware you ca
 ```ts
 import { oidc, getOIDC } from "web-oidc/hono";
 
-let hono = new Hono();
+app = new Hono();
 
-hono.use(
+app.use(
   "*",
   oidc({
     issuer: "https://auth.company.tld",
@@ -130,19 +130,32 @@ hono.use(
     clientSecret: "CLIENT_SECRET",
     redirectUri: "https://www.company.tld/auth/callback",
     responseType: "code id_token",
+    routes: {
+      // You can customize the routes used to handle the login flow
+      // These values are the default ones
+      login: "/auth",
+      callback: "/auth/callback",
+    },
   })
 );
 
-hono.get("/", async (ctx) => {
-  let isAuthenticated = await oidc.isAuthenticated(ctx);
+app.get("/", async (ctx) => {
+  // Check if the user is authenticated
+  let isAuthenticated = oidc.isAuthenticated(ctx);
   if (isAuthenticated) return ctx.redirect("/profile");
   return ctx.html("<h1>Hello Hono</h1>");
 });
 
-hono.get("/profile", oidc.requiresAuth, async (ctx) => {
-  let user = oidc.user(ctx);
-  return ctx.html(`<h1>Hello ${user.name}</h1>`);
-});
+// Require authentication for this route, by default it will redirect to routes.login
+app.get(
+  "/profile",
+  oidc.authenticate({ failureRedirect: "/" }),
+  async (ctx) => {
+    // Get the user info
+    let user = await oidc.user(ctx);
+    return ctx.html(`<h1>Hello ${user.name}</h1>`);
+  }
+);
 ```
 
 ## Author
