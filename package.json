@@ -3,6 +3,7 @@
   "description": "An OpenID Connect client built using only Web APIs",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc --project tsconfig.json --outDir ./build",
@@ -29,6 +30,21 @@
     "web",
     "apis"
   ],
+  "exports": {
+    "./remix": {
+      "types": "./build/remix.d.ts",
+      "default": "./build/remix.js"
+    },
+    "./hono": {
+      "types": "./build/hono.d.ts",
+      "default": "./build/hono.js"
+    },
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "zod": "^3.21.4"
   },
