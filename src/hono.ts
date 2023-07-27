@@ -4,6 +4,7 @@ import { setCookie, getCookie } from "hono/cookie";
 import type { ClientOptions, Client, UserInfo } from "./client";
 import { Issuer } from "./issuer";
 import { TokenSetValue } from "./token-set";
+import { Generator } from "./generator";
 
 interface OIDCMiddlewareOptions extends ClientOptions {
   issuer: Issuer | string | URL;
@@ -36,7 +37,7 @@ export function oidc({
       (url.pathname === routes.login ?? "/login") &&
       context.req.method.toUpperCase() === "POST"
     ) {
-      let state = crypto.randomUUID();
+      let state = Generator.state();
 
       setCookie(context, cookies.state ?? "oidc:state", state, {
         path: "/",

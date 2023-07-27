@@ -54,7 +54,9 @@ This will instantiate a client with the issuer's configuration.
 With a Client instance, we can start handling the authentication flow.
 
 ```ts
-let url = client.authorizationUrl({ state: "random" });
+import { Generator } from "web-oidc";
+
+let url = client.authorizationUrl({ state: Generator.state() });
 ```
 
 This will generate a URL that you can redirect the user to start the flow.
