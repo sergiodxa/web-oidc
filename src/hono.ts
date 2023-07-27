@@ -52,7 +52,18 @@ export function oidc({
       (url.pathname === routes.callback ?? "/callback") &&
       context.req.method.toUpperCase() === "GET"
     ) {
-      throw new Error("Not implemented");
+      let params = await client.callbackParams(url);
+
+      let tokens = await client.oauthCallback(
+        new URL(options.redirectUri),
+        params,
+        {
+          response_type: [options.responseType],
+          state: getCookie(context, cookies.state ?? "oidc:state"),
+        }
+      );
+
+      setCookie(context, cookies.session ?? "oidc:session", tokens.toString());
     }
 
     context.set(IssuerSymbol, issuer);
@@ -78,6 +89,10 @@ oidc.authenticate = function authenticate(
 ): MiddlewareHandler {
   return async function middleware(context, next) {
     let isAuthenticated = oidc.isAuthenticated(context);
+    let { routes } = context.get(OptionsSymbol) as Pick<
+      OIDCMiddlewareOptions,
+      "cookies" | "routes"
+    >;
 
     switch (true) {
       case !isAuthenticated && Boolean(options.failureRedirect): {
@@ -90,6 +105,10 @@ oidc.authenticate = function authenticate(
 
       case isAuthenticated && !Boolean(options.successRedirect): {
         context.set(UserInfoSymbol, await oidc.user(context));
+      }
+
+      case !isAuthenticated && !Boolean(options.failureRedirect): {
+        return context.redirect(routes?.login ?? "/oauth");
       }
     }
 
@@ -114,4 +133,24 @@ oidc.user = async function user(context: Context) {
   ) as unknown as TokenSetValue;
 
   return await client.userinfo(access_token);
+};
+
+oidc.issuer = function issuer(context: Context) {
+  let issuer = context.get(IssuerSymbol) as Issuer | undefined;
+  if (!issuer) {
+    throw new ReferenceError(
+      "oidc.issuer must be called after the oidc middleware runs"
+    );
+  }
+  return issuer;
+};
+
+oidc.client = function client(context: Context) {
+  let client = context.get(ClientSymbol) as Client | undefined;
+  if (!client) {
+    throw new ReferenceError(
+      "oidc.client must be called after the oidc middleware runs"
+    );
+  }
+  return client;
 };
