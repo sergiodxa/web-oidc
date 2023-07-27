@@ -5,8 +5,8 @@ export class TokenSet {
   public token_type!: string;
   public id_token!: string;
   public refresh_token!: string;
-  public expires_at!: number;
-  public session_state?: string;
+  public expires_in!: number;
+  public scope!: z.infer<typeof ScopeSchema>[];
   [key: string]: TokenSetValue[keyof TokenSetValue];
 
   constructor(values: TokenSetValue) {
@@ -24,16 +24,8 @@ export class TokenSet {
     Object.defineProperties(this, properties);
   }
 
-  set expires_in(value: number) {
-    this.expires_at = this.now() + Number(value);
-  }
-
-  get expires_in() {
-    return Math.max(...[this.expires_at - this.now(), 0]);
-  }
-
   expired() {
-    return this.expiresIn === 0;
+    return this.expires_in === 0;
   }
 
   claims() {
@@ -42,19 +34,41 @@ export class TokenSet {
     return JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
   }
 
-  private now() {
-    return Math.floor(Date.now() / 1000);
+  toJSON() {
+    return {
+      access_token: this.access_token,
+      token_type: this.token_type,
+      id_token: this.id_token,
+      refresh_token: this.refresh_token,
+      expires_in: this.expires_in,
+      scope: this.scope.join(" "),
+    };
+  }
+
+  toString() {
+    return JSON.stringify(this);
   }
 }
+
+const ScopeSchema = z.enum([
+  "openid",
+  "email",
+  "profile",
+  "address",
+  "phone",
+  "offline_access",
+]);
 
 const TokenSetValueSchema = z
   .object({
     access_token: z.string(),
-    token_type: z.string(),
+    expires_in: z.number(),
+    scope: z
+      .string()
+      .transform((scope) => scope.split(" "))
+      .pipe(ScopeSchema.array()),
     id_token: z.string(),
-    refresh_token: z.string(),
-    expires_at: z.number(),
-    session_state: z.string().optional(),
+    token_type: z.literal("Bearer"),
   })
   .passthrough();
 
