@@ -54,6 +54,8 @@ This will instantiate a client with the issuer's configuration.
 With a Client instance, we can start handling the authentication flow.
 
 ```ts
+// The `Generator.state()` method is a helper to generate a cryptographically
+// secure random string
 import { Generator } from "web-oidc";
 
 let url = client.authorizationUrl({ state: Generator.state() });
