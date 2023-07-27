@@ -2,7 +2,9 @@
 
 An OpenID Connect client for web applications built completely using standard Web APIs.
 
-> This package is still a work in progress.
+> **Note**: This package is a port of [`openid-client`](https://github.com/panva/node-openid-client) but only using standard Web APIs.
+
+> **Warning**: This package is still a work in progress and should not be used in production.
 
 ## Installation
 
