@@ -97,8 +97,8 @@ authenticator.use(
       redirectUri: "https://www.company.tld/auth/callback",
       responseType: "code id_token",
     },
-    async ({ profile, accessToken, refreshToken, extraParams }) => {
-      return { profile, accessToken, refreshToken };
+    async ({ profile, tokens }) => {
+      return { profile, tokens };
     }
   )
 );
@@ -116,6 +116,37 @@ export async function action({ request }: DataFunctionArgs) {
   });
 }
 ```
+
+If you plan to keep the tokens saved, you can save the strategy into a variable.
+
+```ts
+import { OIDCStrategy } from "web-oidc/remix";
+import { Issuer } from "web-oidc";
+
+let strategy = new OIDCStrategy<User>(
+  {
+    issuer: "https://auth.company.tld",
+    clientID: "CLIENT_ID",
+    clientSecret: "CLIENT_SECRET",
+    redirectUri: "https://www.company.tld/auth/callback",
+    responseType: "code id_token",
+  },
+  async ({ profile, tokens }) => {
+    return { profile, tokens };
+  }
+);
+
+authenticator.use(strategy);
+```
+
+Then, you can access the Issuer and Client instances with:
+
+```ts
+let issuer = await strategy.issuer;
+let client = await strategy.client;
+```
+
+The return value of both is a promise because (unless you pass an Issuer instance to the strategy) the strategy needs to discover the issuer configuration dynamically first and this only happens the first time it's needed.
 
 ### Use with Hono
 
@@ -143,6 +174,12 @@ app.use(
   })
 );
 
+// After a success login, this handler will be called, here you can redirect the
+// user somewhere else
+app.get("/auth/callback", (ctx) => {
+  return ctx.redirect("/profile");
+});
+
 app.get("/", async (ctx) => {
   // Check if the user is authenticated
   let isAuthenticated = oidc.isAuthenticated(ctx);
@@ -160,6 +197,16 @@ app.get(
     return ctx.html(`<h1>Hello ${user.name}</h1>`);
   }
 );
+```
+
+You can also access the Issuer and Client instances with:
+
+```ts
+app.get("/route", async (ctx) => {
+  let issuer = oidc.issuer(ctx);
+  let client = oidc.client(ctx);
+  // do something with them
+});
 ```
 
 ## Author
