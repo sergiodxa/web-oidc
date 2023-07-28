@@ -5,20 +5,30 @@ import {
 } from "remix-auth";
 import { Issuer } from "./issuer";
 import {
+  type AppLoadContext,
   type SessionStorage,
   type SessionData,
   redirect,
 } from "@remix-run/server-runtime";
-import { UserInfo, type ClientOptions } from "./client";
+import {
+  UserInfo,
+  type ClientOptions,
+  type AuthenticationRequestParams,
+} from "./client";
 import { Generator } from "./generator";
 import { TokenSet } from "./token-set";
 
 interface OIDCStrategyVerifyOptions {
+  context?: AppLoadContext;
   profile: UserInfo;
   tokens: TokenSet;
 }
 
 interface OIDCStrategyOptions extends Omit<ClientOptions, "responseType"> {
+  authorizationParams: Omit<
+    AuthenticationRequestParams,
+    "clientID" | "responseType" | "redirectUri" | "state"
+  >;
   issuer: Issuer | string | URL;
   sessionKeys?: { state?: `oidc:${string}` };
 }
@@ -44,7 +54,7 @@ export class OIDCStrategy<User> extends Strategy<
     options: AuthenticateOptions
   ): Promise<User> {
     let url = new URL(request.url);
-    let redirectURL = new URL(this.options.redirectUri);
+    let redirectURL = new URL(this.options.redirect_uri);
 
     if (url.pathname !== redirectURL.pathname) {
       let state = Generator.state();
@@ -56,7 +66,10 @@ export class OIDCStrategy<User> extends Strategy<
       session.set(this.options.sessionKeys?.state ?? "oidc:state", state);
 
       let client = await this.client;
-      let url = client.authorizationUrl({ state });
+      let url = client.authorizationUrl({
+        state,
+        ...this.options.authorizationParams,
+      });
 
       throw redirect(url.toString(), {
         headers: { "set-cookie": await sessionStorage.commitSession(session) },
@@ -78,7 +91,7 @@ export class OIDCStrategy<User> extends Strategy<
 
       let tokens = await client.oauthCallback(redirectURL, params, {
         state: stateSession,
-        response_type: ["code"],
+        response_type: "code",
       });
 
       let profile = await client.userinfo(tokens.access_token);
@@ -131,7 +144,7 @@ export class OIDCStrategy<User> extends Strategy<
 
   get client() {
     return this.issuer.then((issuer) =>
-      issuer.client({ ...this.options, responseType: "code" })
+      issuer.client({ ...this.options, response_type: "code" })
     );
   }
 }

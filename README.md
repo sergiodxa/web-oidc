@@ -44,10 +44,10 @@ import { Issuer } from "web-oidc";
 const issuer = await Issuer.discover("https://auth.company.tld");
 
 let client = issuer.client({
-  clientID: "CLIENT_ID",
-  clientSecret: "CLIENT_SECRET",
-  redirectUri: "https://www.company.tld/auth/callback",
-  responseType: "code id_token",
+  client_id: "CLIENT_ID",
+  client_secret: "CLIENT_SECRET",
+  redirect_uri: "https://www.company.tld/auth/callback",
+  response_ype: "code id_token",
 });
 ```
 

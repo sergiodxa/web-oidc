@@ -3,10 +3,10 @@ import { Issuer } from "./issuer";
 import { TokenSet } from "./token-set";
 
 export interface ClientOptions {
-  clientID: string;
-  clientSecret?: string;
-  redirectUri: string;
-  responseType: ResponseType;
+  client_id: string;
+  client_secret?: string;
+  redirect_uri: string;
+  response_type: ResponseType;
 }
 
 export class Client {
@@ -23,14 +23,16 @@ export class Client {
   }
 
   authorizationUrl({
-    redirectUri = this.#options.redirectUri,
-    responseType = this.#options.responseType,
+    redirect_uri = this.#options.redirect_uri,
+    response_type = this.#options.response_type,
     scope = ["openid"],
+    client_id = this.#options.client_id,
+    state,
     ...options
   }: AuthenticationRequestParams): URL {
     let result = AuthenticationRequestParamsSchema.safeParse({
-      redirectUri,
-      responseType,
+      redirect_uri,
+      response_type,
       scope,
       ...options,
     });
@@ -46,36 +48,22 @@ export class Client {
     let url = new URL(issuer.authorization_endpoint);
 
     // required
-    url.searchParams.set("response_type", responseType);
-    url.searchParams.set(
-      "client_id",
-      options.clientID ?? this.#options.clientID
-    );
+    url.searchParams.set("response_type", response_type);
+    url.searchParams.set("client_id", client_id);
     url.searchParams.set("scope", scope.join(" "));
-    url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set("state", options.state);
+    url.searchParams.set("redirect_uri", redirect_uri);
+    url.searchParams.set("state", state);
 
     // optionals
-    if (options.responseMode) {
-      url.searchParams.set("response_mode", options.responseMode);
-    }
-    if (options.nonce) url.searchParams.set("nonce", options.nonce);
-    if (options.display) url.searchParams.set("display", options.display);
-    if (options.prompt) url.searchParams.set("prompt", options.prompt);
-    if (options.maxAge) {
-      url.searchParams.set("max_age", options.maxAge.toString());
-    }
-    if (options.uiLocales) {
-      url.searchParams.set("ui_locales", options.uiLocales);
-    }
-    if (options.idTokenHint) {
-      url.searchParams.set("id_token_hint", options.idTokenHint);
-    }
-    if (options.loginHint) {
-      url.searchParams.set("login_hint", options.loginHint);
-    }
-    if (options.acrValues) {
-      url.searchParams.set("acr_values", options.acrValues);
+    for (let option in options) {
+      let value = options[option as keyof typeof options];
+      if (!value) continue;
+      else if (typeof value === "string") {
+        url.searchParams.set(option, value);
+      } else if (typeof value === "number") {
+        url.searchParams.set(option, value.toString());
+      }
+      continue;
     }
 
     return url;
@@ -148,9 +136,9 @@ export class Client {
       "content-type": "application/x-www-form-urlencoded",
     };
 
-    body.set("client_id", this.#options.clientID);
-    if (this.#options.clientSecret) {
-      body.set("client_secret", this.#options.clientSecret);
+    body.set("client_id", this.#options.client_id);
+    if (this.#options.client_secret) {
+      body.set("client_secret", this.#options.client_secret);
     }
 
     let response = await fetch(endpoint, {
@@ -171,7 +159,8 @@ export class Client {
         scope: z
           .string()
           .transform((scope) => scope.split(" "))
-          .pipe(ScopeSchema.array()).transform((scopes) => scopes.join(" ")),
+          .pipe(ScopeSchema.array())
+          .transform((scopes) => scopes.join(" ")),
         id_token: z.string(),
         token_type: z.literal("Bearer"),
       })
@@ -203,7 +192,7 @@ export class Client {
     redirectURL: URL,
     incoming: URLSearchParams,
     checks: {
-      response_type?: ResponseType[];
+      response_type?: ResponseType;
       state?: string;
       nonce?: string;
     }
@@ -245,7 +234,8 @@ export class Client {
           );
         }
       } else if (type in RESPONSE_TYPE_REQUIRED_PARAMS) {
-        let requiredParams = RESPONSE_TYPE_REQUIRED_PARAMS[type] ?? [];
+        let requiredParams =
+          RESPONSE_TYPE_REQUIRED_PARAMS[type as ResponseType] ?? [];
         for (let param of requiredParams) {
           if (!incoming.has(param)) {
             throw new ReferenceError(
@@ -321,10 +311,10 @@ export class Client {
       .parse(response.json());
 
     return new Client(issuer, {
-      clientID: body.client_id,
-      clientSecret: body.client_secret,
-      redirectUri: body.redirect_uri,
-      responseType: body.response_type,
+      client_id: body.client_id,
+      client_secret: body.client_secret,
+      redirect_uri: body.redirect_uri,
+      response_type: body.response_type,
     });
   }
 }
@@ -386,39 +376,43 @@ const ScopeSchema = z.enum([
   "offline_access",
 ]);
 
-const AuthenticationRequestParamsSchema = z.object({
-  scope: ScopeSchema.array()
-    .refine((scopes) => scopes.includes("openid"), {
-      message: "openid scope is required",
-    })
-    .optional(),
-  responseType: z
-    .enum([
-      "code",
-      "token",
-      "id_token",
-      "code token",
-      "code id_token",
-      "token id_token",
-      "code token id_token",
-      "none",
-    ])
-    .optional(),
-  clientID: z.string().optional(),
-  redirectUri: z.string().url().optional(),
-  state: z.string(),
-  responseMode: z.string().optional(),
-  nonce: z.string().optional(),
-  display: z.enum(["page", "popup", "touch", "wap"]).optional(),
-  prompt: z.enum(["none", "login", "consent", "select_account"]).optional(),
-  maxAge: z.number().optional(),
-  uiLocales: z.string().optional(),
-  idTokenHint: z.string().optional(),
-  loginHint: z.string().optional(),
-  acrValues: z.string().optional(),
-});
+export type Scope = z.infer<typeof ScopeSchema>;
 
-type AuthenticationRequestParams = z.infer<
+const AuthenticationRequestParamsSchema = z
+  .object({
+    scope: ScopeSchema.array()
+      .refine((scopes) => scopes.includes("openid"), {
+        message: "openid scope is required",
+      })
+      .optional(),
+    response_type: z
+      .enum([
+        "code",
+        "token",
+        "id_token",
+        "code token",
+        "code id_token",
+        "token id_token",
+        "code token id_token",
+        "none",
+      ])
+      .optional(),
+    client_id: z.string().optional(),
+    redirect_uri: z.string().url().optional(),
+    state: z.string(),
+    response_mode: z.string().optional(),
+    nonce: z.string().optional(),
+    display: z.enum(["page", "popup", "touch", "wap"]).optional(),
+    prompt: z.enum(["none", "login", "consent", "select_account"]).optional(),
+    max_age: z.number().optional(),
+    ui_locales: z.string().optional(),
+    id_token_hint: z.string().optional(),
+    login_hint: z.string().optional(),
+    acr_values: z.string().optional(),
+  })
+  .passthrough();
+
+export type AuthenticationRequestParams = z.infer<
   typeof AuthenticationRequestParamsSchema
 >;
 
