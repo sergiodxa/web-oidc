@@ -30,6 +30,7 @@
     "web",
     "apis"
   ],
+  "files": ["build"],
   "exports": {
     "./remix": {
       "types": "./build/remix.d.ts",
