@@ -60,26 +60,33 @@ With a Client instance, we can start handling the authentication flow.
 // secure random string
 import { Generator } from "web-oidc";
 
-let url = client.authorizationUrl({ state: Generator.state() });
+let state = Generator.state(); // keep this in a cookie/session
+let url = client.authorizationUrl({ state });
 ```
 
 This will generate a URL that you can redirect the user to start the flow.
 
-### Fetch user info
-
-You can use the `Client#userinfo` method to fetch the user's profile from the IdP.
+Once the user is back on your callback URL, you can use the `Client#callbackParams` and `Client#oauthCallback` methods to handle the request.
 
 ```ts
-let userinfo = await client.userinfo("accessToken");
+let params = await client.callbackParams(request);
+let tokens = await client.oauthCallback(new URL(request.url), params, {
+  state, // read this from where you stored it
+  response_type: "code",
+});
 ```
 
-### Use refresh tokens
+You can then use the `Client#userinfo` method to fetch the user's profile from the IdP.
 
-If you're keeping the access and refresh tokens around, you can use the `Client#refresh` method to get a new access token when it expires.
+```ts
+let userinfo = await client.userinfo(tokens.access_token);
+```
+
+And if you're keeping the access and refresh tokens around, you can use the `Client#refresh` method to get a new access token when it expires.
 
 ```ts
 let { accessToken, refreshToken, extraParams } = await client.refresh(
-  oldAccessToken
+  tokens.refresh_token
 );
 ```
 

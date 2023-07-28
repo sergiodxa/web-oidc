@@ -121,7 +121,9 @@ export class Client {
 
     let response = await fetch(url, init);
 
-    if (!response.ok) throw new Error("Failed to fetch userinfo");
+    if (!response.ok) {
+      throw new Error("Failed to fetch userinfo", { cause: response });
+    }
 
     return await UserInfoSchema.promise().parse(response.json());
   }
