@@ -171,7 +171,7 @@ export class Client {
         scope: z
           .string()
           .transform((scope) => scope.split(" "))
-          .pipe(ScopeSchema.array()),
+          .pipe(ScopeSchema.array()).transform((scopes) => scopes.join(" ")),
         id_token: z.string(),
         token_type: z.literal("Bearer"),
       })
