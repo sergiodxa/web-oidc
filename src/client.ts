@@ -34,6 +34,7 @@ export class Client {
       redirect_uri,
       response_type,
       scope,
+      state,
       ...options,
     });
 

@@ -55,10 +55,10 @@ export function oidc({
       let params = await client.callbackParams(url);
 
       let tokens = await client.oauthCallback(
-        new URL(options.redirectUri),
+        new URL(options.redirect_uri),
         params,
         {
-          response_type: [options.responseType],
+          response_type: options.response_type,
           state: getCookie(context, cookies.state ?? "oidc:state"),
         }
       );

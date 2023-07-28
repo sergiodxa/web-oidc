@@ -6,10 +6,10 @@ describe(Client.name, () => {
   test.skip("fetches the userinfo", async () => {
     let google = await Issuer.discover("https://accounts.google.com");
     let client = new Client(google, {
-      clientID: "",
-      clientSecret: "",
-      redirectUri: "",
-      responseType: "code id_token",
+      client_id: "",
+      client_secret: "",
+      redirect_uri: "",
+      response_type: "code id_token",
     });
 
     let userinfo = await client.userinfo("token");
@@ -23,10 +23,10 @@ describe(Client.name, () => {
   test("generates the authorization URL", async () => {
     let google = await Issuer.discover("https://accounts.google.com");
     let client = new Client(google, {
-      clientID: "CLIENT_ID",
-      clientSecret: "CLIENT_SECRET",
-      redirectUri: "https://company.tld/auth/callback",
-      responseType: "code id_token",
+      client_id: "CLIENT_ID",
+      client_secret: "CLIENT_SECRET",
+      redirect_uri: "https://company.tld/auth/callback",
+      response_type: "code id_token",
     });
 
     let url = client.authorizationUrl({ state: "random" });
