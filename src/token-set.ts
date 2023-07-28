@@ -72,4 +72,4 @@ const TokenSetValueSchema = z
   })
   .passthrough();
 
-export type TokenSetValue = z.infer<typeof TokenSetValueSchema>;
+export type TokenSetValue = z.input<typeof TokenSetValueSchema>;
