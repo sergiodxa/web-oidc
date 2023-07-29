@@ -129,6 +129,15 @@ export class Client {
     return await this.grant(body);
   }
 
+  async clientCredentials(audience: string) {
+    let body = new URLSearchParams({
+      grant_type: "client_credentials",
+      audience,
+    });
+
+    return await this.grant(body);
+  }
+
   async grant(body: URLSearchParams): Promise<TokenSet> {
     let endpoint = assert(this.#issuer, "token_endpoint");
 
