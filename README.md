@@ -29,10 +29,10 @@ With the issuer ready, we can instantiate a Client.
 ```ts
 import { Client } from "web-oidc";
 let client = new Client(issuer, {
-  clientID: "CLIENT_ID",
-  clientSecret: "CLIENT_SECRET",
-  redirectUri: "https://www.company.tld/auth/callback",
-  responseType: "code id_token",
+  client_id: "CLIENT_ID",
+  client_secret: "CLIENT_SECRET",
+  redirect_uri: "https://www.company.tld/auth/callback",
+  response_type: "code id_token",
 });
 ```
 
@@ -47,7 +47,7 @@ let client = issuer.client({
   client_id: "CLIENT_ID",
   client_secret: "CLIENT_SECRET",
   redirect_uri: "https://www.company.tld/auth/callback",
-  response_ype: "code id_token",
+  response_type: "code id_token",
 });
 ```
 
@@ -92,7 +92,7 @@ let { accessToken, refreshToken, extraParams } = await client.refresh(
 
 ### Use with Remix Auth
 
-If you're building a Remix application and using Remix Auth, this packages exports a strategy you can use.
+If you're building a Remix application and using Remix Auth, this package exports a strategy you can use.
 
 ```ts
 import { OIDCStrategy } from "web-oidc/remix";
@@ -101,10 +101,10 @@ authenticator.use(
   new OIDCStrategy(
     {
       issuer: "https://auth.company.tld",
-      clientID: "CLIENT_ID",
-      clientSecret: "CLIENT_SECRET",
-      redirectUri: "https://www.company.tld/auth/callback",
-      responseType: "code id_token",
+      client_id: "CLIENT_ID",
+      client_secret: "CLIENT_SECRET",
+      redirect_uri: "https://www.company.tld/auth/callback",
+      response_type: "code id_token",
     },
     async ({ profile, tokens }) => {
       return { profile, tokens };
@@ -135,10 +135,10 @@ import { Issuer } from "web-oidc";
 let strategy = new OIDCStrategy<User>(
   {
     issuer: "https://auth.company.tld",
-    clientID: "CLIENT_ID",
-    clientSecret: "CLIENT_SECRET",
-    redirectUri: "https://www.company.tld/auth/callback",
-    responseType: "code id_token",
+    client_id: "CLIENT_ID",
+    client_secret: "CLIENT_SECRET",
+    redirect_uri: "https://www.company.tld/auth/callback",
+    response_type: "code id_token",
   },
   async ({ profile, tokens }) => {
     return { profile, tokens };
@@ -159,10 +159,10 @@ The return value of both is a promise because (unless you pass an Issuer instanc
 
 ### Use with Hono
 
-If you're building a Hono application, this packages exports a middleware you can use.
+If you're building a Hono application, this package exports a middleware you can use.
 
 ```ts
-import { oidc, getOIDC } from "web-oidc/hono";
+import { oidc } from "web-oidc/hono";
 
 app = new Hono();
 
@@ -170,10 +170,10 @@ app.use(
   "*",
   oidc({
     issuer: "https://auth.company.tld",
-    clientID: "CLIENT_ID",
-    clientSecret: "CLIENT_SECRET",
-    redirectUri: "https://www.company.tld/auth/callback",
-    responseType: "code id_token",
+    client_id: "CLIENT_ID",
+    client_secret: "CLIENT_SECRET",
+    redirect_uri: "https://www.company.tld/auth/callback",
+    response_type: "code id_token",
     routes: {
       // You can customize the routes used to handle the login flow
       // These values are the default ones
