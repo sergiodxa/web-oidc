@@ -18,8 +18,6 @@ describe(Generator.name, () => {
 
 		let codeChallenge = await Generator.codeChallenge(codeVerifier);
 
-		expect(codeChallenge).toBe(
-			"YTlkODBiMmQxYWY1YjFhMTQ3NGZhMGQ2N2Q2NTM2ZjE1MzRmMjIyZWRlZjcyOWM0MDY3MDQ2ZGNlNjlkYzNkOA",
-		);
+		expect(codeChallenge).toBe("qdgLLRr1saFHT6DWfWU28VNPIi7e9ynEBnBG3Oadw9g=");
 	});
 });

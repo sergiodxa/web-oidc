@@ -1,3 +1,5 @@
+import { toByteArray, fromByteArray } from "base64-js";
+
 export class Generator {
 	static state() {
 		return Generator.random();
@@ -13,11 +15,7 @@ export class Generator {
 			new TextEncoder().encode(codeVerifier),
 		);
 
-		let hash = Array.from(new Uint8Array(buffer))
-			.map((byte) => byte.toString(16).padStart(2, "0"))
-			.join("");
-
-		return Buffer.from(hash).toString("base64url");
+		return fromByteArray(new Uint8Array(buffer));
 	}
 
 	private static random(bytes = 32) {

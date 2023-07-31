@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { decodeJwt } from "jose";
 
 export class TokenSet {
 	public access_token!: string;
@@ -24,14 +25,16 @@ export class TokenSet {
 		Object.defineProperties(this, properties);
 	}
 
-	expired() {
-		return this.expires_in === 0;
+	expired(token = this.access_token) {
+		let { exp } = decodeJwt(token);
+		if (!exp) return false;
+		let now = Date.now() / 1000;
+		return exp < now;
 	}
 
 	claims() {
 		if (!this.id_token) throw new TypeError("id_token not present in TokenSet");
-		let [, payload] = this.id_token.split(".");
-		return JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
+		return decodeJwt(this.id_token);
 	}
 
 	toJSON() {
