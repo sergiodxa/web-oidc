@@ -204,6 +204,7 @@ export class Client {
     incoming: URLSearchParams,
     checks: {
       response_type?: ResponseType;
+      code_verifier?: string;
       state?: string;
       nonce?: string;
     }
@@ -271,6 +272,10 @@ export class Client {
         code: incoming.get("code")!,
         redirect_uri: redirectURL.toString(),
       });
+
+      if (checks.code_verifier) {
+        params.set("code_verifier", checks.code_verifier);
+      }
 
       return this.grant(params);
     }
@@ -414,6 +419,8 @@ const AuthenticationRequestParamsSchema = z
     state: z.string(),
     response_mode: z.string().optional(),
     nonce: z.string().optional(),
+    code_challenge: z.string().optional(),
+    code_challenge_method: z.enum(["plain", "S256"]).optional(),
     display: z.enum(["page", "popup", "touch", "wap"]).optional(),
     prompt: z.enum(["none", "login", "consent", "select_account"]).optional(),
     max_age: z.number().optional(),

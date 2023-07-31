@@ -30,7 +30,7 @@ interface OIDCStrategyOptions extends Omit<ClientOptions, "responseType"> {
     "clientID" | "responseType" | "redirectUri" | "state"
   >;
   issuer: Issuer | string | URL;
-  sessionKeys?: { state?: `oidc:${string}` };
+  sessionKeys?: { state?: `oidc:${string}`; verifier?: `oidc:${string}` };
 }
 
 export class OIDCStrategy<User> extends Strategy<
@@ -58,17 +58,25 @@ export class OIDCStrategy<User> extends Strategy<
 
     if (url.pathname !== redirectURL.pathname) {
       let state = Generator.state();
+      let verifier = Generator.codeVerifier();
+      let challenge = await Generator.codeChallenge(verifier);
 
       let session = await sessionStorage.getSession(
         request.headers.get("cookie")
       );
 
       session.set(this.options.sessionKeys?.state ?? "oidc:state", state);
+      session.set(
+        this.options.sessionKeys?.verifier ?? "oidc:verifier",
+        verifier
+      );
 
       let client = await this.client;
       let url = client.authorizationUrl({
         state,
         ...this.options.authorizationParams,
+        code_challenge: challenge,
+        code_challenge_method: "S256",
       });
 
       throw redirect(url.toString(), {
@@ -89,8 +97,15 @@ export class OIDCStrategy<User> extends Strategy<
 
       let params = await client.callbackParams(request.url);
 
+      let code_verifier = session.get(
+        this.options.sessionKeys?.verifier ?? "oidc:verifier"
+      );
+
+      if (typeof code_verifier !== "string") code_verifier = undefined;
+
       let tokens = await client.oauthCallback(redirectURL, params, {
         state: stateSession,
+        code_verifier,
         response_type: "code",
       });
 
