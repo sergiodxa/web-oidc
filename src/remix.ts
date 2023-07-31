@@ -96,7 +96,11 @@ export class OIDCStrategy<User> extends Strategy<
 
       let profile = await client.userinfo(tokens.access_token);
 
-      let user = await this.verify({ profile, tokens });
+      let user = await this.verify({
+        profile,
+        tokens,
+        context: options.context,
+      });
 
       return await this.success(user, request, sessionStorage, options);
     } catch (exception) {
