@@ -188,11 +188,12 @@ export class Client {
     else if (input instanceof Request) {
       let method = input.method.toUpperCase();
       if (method === "GET") params = new URL(input.url).searchParams;
-      if (input.body === undefined) {
+      else if (input.body === undefined) {
         throw new TypeError("Input Request must have a body if it's not a GET");
+      } else {
+        let request = new Request(input.url, input);
+        params = new URLSearchParams(await request.text());
       }
-      let request = new Request(input.url, input);
-      params = new URLSearchParams(await request.text());
     } else throw new TypeError("Invalid input for Client#callbackParams");
 
     return params;
