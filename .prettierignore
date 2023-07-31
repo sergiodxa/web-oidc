@@ -1,0 +1,8 @@
+.github
+coverage
+node_modules
+.gitignore
+.npmignore
+.prettierignore
+LICENSE
+!build
