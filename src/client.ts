@@ -349,7 +349,7 @@ const UserInfoSchema = z
     zoneinfo: z.string().optional(),
     locale: z.string().optional(),
     phone_number: z.string().optional(),
-    updated_at: z.number().optional(),
+    updated_at: z.string().datetime().optional(),
     address: z
       .object({
         formatted: z.string().optional(),
@@ -359,7 +359,8 @@ const UserInfoSchema = z
         postal_code: z.string().optional(),
         country: z.string().optional(),
       })
-      .passthrough(),
+      .passthrough()
+      .optional(),
   })
   .passthrough();
 
