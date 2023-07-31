@@ -87,7 +87,7 @@ export class OIDCStrategy<User> extends Strategy<
 
       let client = await this.client;
 
-      let params = await client.callbackParams(request);
+      let params = await client.callbackParams(request.url);
 
       let tokens = await client.oauthCallback(redirectURL, params, {
         state: stateSession,
