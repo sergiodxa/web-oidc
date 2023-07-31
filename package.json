@@ -7,10 +7,11 @@
 	"scripts": {
 		"prepare": "npm run build",
 		"build": "tsc --project tsconfig.json --outDir ./build",
-		"postbuild": "prettier --write \"./build/*.js\"",
+		"postbuild": "prettier --write \"build/**/*.js\"",
 		"typecheck": "tsc --project tsconfig.json --noEmit",
 		"test": "vitest",
-		"lint": "echo \"Not implemented yet\""
+		"lint": "echo \"Not implemented yet\"",
+		"format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
 	},
 	"homepage": "https://github.com/sergiodxa/web-oidc#readme",
 	"repository": {
