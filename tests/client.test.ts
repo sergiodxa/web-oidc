@@ -6,9 +6,9 @@ describe(Client.name, () => {
 	test.skip("fetches the userinfo", async () => {
 		let google = await Issuer.discover("https://accounts.google.com");
 		let client = new Client(google, {
-			client_id: "",
-			client_secret: "",
-			redirect_uri: "",
+			client_id: "CLIENT_ID",
+			client_secret: "CLIENT_SECRET",
+			redirect_uri: "https://company.tld/auth/callback",
 			response_type: "code id_token",
 		});
 
@@ -34,5 +34,23 @@ describe(Client.name, () => {
 		expect(url.toString()).toEqual(
 			"https://accounts.google.com/o/oauth2/v2/auth?response_type=code+id_token&client_id=CLIENT_ID&scope=openid&redirect_uri=https%3A%2F%2Fcompany.tld%2Fauth%2Fcallback&state=random",
 		);
+	});
+
+	test.skip("refresh the access token", async () => {
+		let google = await Issuer.discover("https://accounts.google.com");
+		let client = new Client(google, {
+			client_id: "CLIENT_ID",
+			client_secret: "CLIENT_SECRET",
+			redirect_uri: "https://company.tld/auth/callback",
+			response_type: "code id_token",
+		});
+
+		let tokenSet = await client.refresh("refresh_token");
+
+		expect(tokenSet.toJSON()).toEqual({
+			access_token: "ACCESS_TOKEN",
+			expires_in: 3599,
+			refresh_token: "REFRESH_TOKEN",
+		});
 	});
 });

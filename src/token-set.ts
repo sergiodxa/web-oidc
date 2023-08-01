@@ -66,11 +66,14 @@ export const TokenSetValueSchema = z
 	.object({
 		access_token: z.string(),
 		expires_in: z.number(),
-		id_token: z.string(),
-		scope: z
-			.string()
-			.transform((scope) => scope.split(" "))
-			.pipe(ScopeSchema.array()),
+		id_token: z.string().optional(),
+		scope: z.union([
+			z
+				.string()
+				.transform((scope) => scope.split(" "))
+				.pipe(ScopeSchema.array()),
+			ScopeSchema.array(),
+		]),
 		token_type: z.literal("Bearer"),
 		refresh_token: z.string().optional(),
 	})
