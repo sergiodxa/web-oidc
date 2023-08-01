@@ -11,6 +11,8 @@ describe(Generator.name, () => {
 	test("generates a random code verifier", () => {
 		let codeVerifier = Generator.codeVerifier();
 		expect(codeVerifier).toStrictEqual(expect.any(String));
+		expect(codeVerifier.length).toBeGreaterThanOrEqual(43);
+		expect(codeVerifier.length).toBeLessThanOrEqual(128);
 	});
 
 	test("generates a code challenge from a code verifier", async () => {

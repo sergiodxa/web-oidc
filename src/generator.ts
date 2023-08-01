@@ -6,7 +6,7 @@ export class Generator {
 	}
 
 	static codeVerifier() {
-		return this.random(128);
+		return this.random(64);
 	}
 
 	static async codeChallenge(codeVerifier: string) {
