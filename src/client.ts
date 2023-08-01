@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Issuer } from "./issuer";
 import { TokenSet } from "./token-set";
+import { OIDCError } from "./error";
 
 export interface ClientOptions {
 	client_id: string;
@@ -199,6 +200,19 @@ export class Client {
 		return params;
 	}
 
+	/**
+	 * @param redirectURL Redirect URL to compare against the incoming URL.
+	 * @param incoming Incoming URLSearchParams from the callback.
+	 * @param checks Checks to perform on the incoming URL.
+	 * @throws {TypeError} Missing Client#callback checks.state
+	 * @throws {ReferenceError} Missing state on URL.
+	 * @throws {RangeError} State mismatch.
+	 * @throws {OIDCError} An error was returned from the authorization server.
+	 * @throws {RangeError} Unexpected parameters for response_type none.
+	 * @throws {ReferenceError} Missing code on URL for response_type code.
+	 * @throws {Error} No valid response_type found.
+	 * @returns The token set from the authorization server.
+	 */
 	oauthCallback(
 		redirectURL: URL,
 		incoming: URLSearchParams,
@@ -208,7 +222,7 @@ export class Client {
 			state?: string;
 			nonce?: string;
 		},
-	) {
+	): Promise<TokenSet> {
 		let stateUrl = incoming.get("state");
 
 		if (incoming.has("state") && !checks.state) {
@@ -222,6 +236,13 @@ export class Client {
 		if (incoming.get("state") !== checks.state) {
 			throw new RangeError("State mismatch.", {
 				cause: { expected: checks.state, actual: stateUrl },
+			});
+		}
+
+		if (incoming.has("error")) {
+			throw new OIDCError(incoming.get("error")!, {
+				description: incoming.get("error_description"),
+				uri: incoming.get("error_uri"),
 			});
 		}
 
