@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Issuer } from "./issuer";
-import { TokenSet } from "./token-set";
+import { TokenSet, TokenSetValue, TokenSetValueSchema } from "./token-set";
 import { OIDCError } from "./error";
 
 export interface ClientOptions {
@@ -119,13 +119,17 @@ export class Client {
 	}
 
 	async refresh(refreshToken: string | TokenSet) {
-		let body = new URLSearchParams({
-			grant_type: "refresh_token",
-			refresh_token:
-				refreshToken instanceof TokenSet
-					? refreshToken.refresh_token
-					: refreshToken,
-		});
+		let body = new URLSearchParams();
+
+		body.set("grant_type", "refresh_token");
+
+		if (typeof refreshToken === "string") {
+			body.set("refresh_token", refreshToken);
+		} else if (refreshToken.refresh_token) {
+			body.set("refresh_token", refreshToken.refresh_token);
+		} else {
+			throw new TypeError("Missing refresh_token on Client#refresh");
+		}
 
 		return await this.grant(body);
 	}
@@ -152,31 +156,19 @@ export class Client {
 			body.set("client_secret", this.#options.client_secret);
 		}
 
-		let response = await fetch(endpoint, {
-			method: "POST",
-			headers,
-			body,
-		});
+		let response = await fetch(endpoint, { method: "POST", headers, body });
 
 		if (!response.ok) {
-			let body = await response.text();
-			throw new Error("Failed to fetch token endpoint", { cause: body });
+			let body = await GrantErrorSchema.promise().parse(response.json());
+			throw new OIDCError(body.error, {
+				description: body.error_description ?? null,
+				uri: body.error_uri ?? null,
+			});
 		}
 
-		let result = await z
-			.object({
-				access_token: z.string(),
-				expires_in: z.literal(86400),
-				scope: z
-					.string()
-					.transform((scope) => scope.split(" "))
-					.pipe(ScopeSchema.array())
-					.transform((scopes) => scopes.join(" ")),
-				id_token: z.string(),
-				token_type: z.literal("Bearer"),
-			})
-			.promise()
-			.parse(response.json());
+		let result: TokenSetValue = await TokenSetValueSchema.promise().parse(
+			response.json(),
+		);
 
 		return new TokenSet(result);
 	}
@@ -468,3 +460,16 @@ function assert(issuer: Issuer, endpoint: keyof Issuer["metadata"]) {
 
 	return new URL(value);
 }
+
+const GrantErrorSchema = z.object({
+	error_description: z.string().optional().nullable(),
+	error_uri: z.string().optional().nullable(),
+	error: z.enum([
+		"invalid_request",
+		"invalid_client",
+		"invalid_grant",
+		"unauthorized_client",
+		"unsupported_grant_type",
+		"invalid_scope",
+	]),
+});

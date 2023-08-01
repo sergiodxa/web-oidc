@@ -3,11 +3,11 @@ import { decodeJwt } from "jose";
 
 export class TokenSet {
 	public access_token!: string;
-	public token_type!: string;
-	public id_token!: string;
-	public refresh_token!: string;
 	public expires_in!: number;
+	public id_token: string | undefined;
+	public refresh_token: string | undefined;
 	public scope!: z.infer<typeof ScopeSchema>[];
+	public token_type!: string;
 	[key: string]: TokenSetValue[keyof TokenSetValue];
 
 	constructor(values: TokenSetValue) {
@@ -40,11 +40,11 @@ export class TokenSet {
 	toJSON() {
 		return {
 			access_token: this.access_token,
-			token_type: this.token_type,
+			expires_in: this.expires_in,
 			id_token: this.id_token,
 			refresh_token: this.refresh_token,
-			expires_in: this.expires_in,
 			scope: this.scope.join(" "),
+			token_type: this.token_type,
 		};
 	}
 
@@ -62,17 +62,18 @@ const ScopeSchema = z.enum([
 	"offline_access",
 ]);
 
-const TokenSetValueSchema = z
+export const TokenSetValueSchema = z
 	.object({
 		access_token: z.string(),
 		expires_in: z.number(),
+		id_token: z.string(),
 		scope: z
 			.string()
 			.transform((scope) => scope.split(" "))
 			.pipe(ScopeSchema.array()),
-		id_token: z.string(),
 		token_type: z.literal("Bearer"),
+		refresh_token: z.string().optional(),
 	})
 	.passthrough();
 
-export type TokenSetValue = z.input<typeof TokenSetValueSchema>;
+export type TokenSetValue = z.output<typeof TokenSetValueSchema>;
