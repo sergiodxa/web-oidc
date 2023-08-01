@@ -15,7 +15,10 @@ export class Generator {
 			new TextEncoder().encode(codeVerifier),
 		);
 
-		return fromByteArray(new Uint8Array(buffer));
+		return fromByteArray(new Uint8Array(buffer))
+			.replace(/\+/g, "-")
+			.replace(/\//g, "_")
+			.replace(/=/g, "");
 	}
 
 	private static random(bytes = 32) {
