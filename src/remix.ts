@@ -3,7 +3,7 @@ import {
 	Strategy,
 	type StrategyVerifyCallback,
 } from "remix-auth";
-import { Issuer } from "./issuer";
+import { Issuer, Metadata } from "./issuer";
 import {
 	type AppLoadContext,
 	type SessionStorage,
@@ -11,9 +11,10 @@ import {
 	redirect,
 } from "@remix-run/server-runtime";
 import {
-	UserInfo,
+	type UserInfo,
 	type ClientOptions,
 	type AuthenticationRequestParams,
+	type Client,
 } from "./client";
 import { Generator } from "./generator";
 import { TokenSet } from "./token-set";
@@ -22,6 +23,8 @@ interface OIDCStrategyVerifyOptions {
 	context?: AppLoadContext;
 	profile: UserInfo;
 	tokens: TokenSet;
+	issuer: Issuer;
+	client: Client;
 }
 
 interface OIDCStrategyOptions extends Omit<ClientOptions, "responseType"> {
@@ -29,7 +32,7 @@ interface OIDCStrategyOptions extends Omit<ClientOptions, "responseType"> {
 		AuthenticationRequestParams,
 		"clientID" | "responseType" | "redirectUri" | "state"
 	>;
-	issuer: Issuer | string | URL;
+	issuer: Issuer | string | URL | Metadata;
 	sessionKeys?: { state?: `oidc:${string}`; verifier?: `oidc:${string}` };
 }
 
@@ -115,6 +118,8 @@ export class OIDCStrategy<User> extends Strategy<
 				profile,
 				tokens,
 				context: options.context,
+				issuer: await this.issuer,
+				client,
 			});
 
 			return await this.success(user, request, sessionStorage, options);
@@ -154,10 +159,14 @@ export class OIDCStrategy<User> extends Strategy<
 
 		if (this.options.issuer instanceof Issuer) {
 			this.issuerPromise = Promise.resolve(this.options.issuer);
-			return this.issuerPromise;
+		} else if (typeof this.options.issuer === "string") {
+			this.issuerPromise = Issuer.discover(this.options.issuer);
+		} else if (this.options.issuer instanceof URL) {
+			this.issuerPromise = Issuer.discover(this.options.issuer);
+		} else {
+			this.issuerPromise = Promise.resolve(new Issuer(this.options.issuer));
 		}
 
-		this.issuerPromise = Issuer.discover(this.options.issuer);
 		return this.issuerPromise;
 	}
 
