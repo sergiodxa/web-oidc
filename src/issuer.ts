@@ -117,16 +117,17 @@ const MetadataSchema = z
 				"self_signed_tls_client_auth",
 				"none",
 			])
-			.array(),
+			.array()
+			.optional(),
 		issuer: z.string(),
 		authorization_endpoint: z.string().url(),
 		token_endpoint: z.string().url(),
-		device_authorization_endpoint: z.string().url(),
+		device_authorization_endpoint: z.string().url().optional(),
 		userinfo_endpoint: z.string().url(),
 		mfa_challenge_endpoint: z.string().url().optional(),
-		jwks_uri: z.string().url(),
+		jwks_uri: z.string().url().optional(),
 		registration_endpoint: z.string().url().optional(),
-		revocation_endpoint: z.string().url(),
+		revocation_endpoint: z.string().url().optional(),
 		scopes_supported: z
 			.enum([
 				"openid",
@@ -144,7 +145,8 @@ const MetadataSchema = z
 				"phone",
 				"address",
 			])
-			.array(),
+			.array()
+			.optional(),
 		response_types_supported: z
 			.enum([
 				"code",
@@ -156,10 +158,17 @@ const MetadataSchema = z
 				"code token id_token",
 				"none",
 			])
-			.array(),
-		code_challenge_methods_supported: z.enum(["plain", "S256"]).array(),
-		subject_types_supported: z.enum(["public"]).array(),
-		id_token_signing_alg_values_supported: z.enum(["HS256", "RS256"]).array(),
+			.array()
+			.optional(),
+		code_challenge_methods_supported: z
+			.enum(["plain", "S256"])
+			.array()
+			.optional(),
+		subject_types_supported: z.enum(["public"]).array().optional(),
+		id_token_signing_alg_values_supported: z
+			.enum(["HS256", "RS256"])
+			.array()
+			.optional(),
 		claims_supported: z
 			.enum([
 				"aud",
@@ -189,4 +198,4 @@ const MetadataSchema = z
 	})
 	.passthrough();
 
-type Metadata = z.infer<typeof MetadataSchema>;
+export type Metadata = z.infer<typeof MetadataSchema>;
