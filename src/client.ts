@@ -201,7 +201,7 @@ export class Client {
 	 * @param redirectURL Redirect URL to compare against the incoming URL.
 	 * @param incoming Incoming URLSearchParams from the callback.
 	 * @param checks Checks to perform on the incoming URL.
-	 * @throws {TypeError} Missing Client#callback checks.state
+	 * @throws {TypeError} Missing Client#oauthCallback checks.state
 	 * @throws {ReferenceError} Missing state on URL.
 	 * @throws {RangeError} State mismatch.
 	 * @throws {OIDCError} An error was returned from the authorization server.
@@ -223,7 +223,7 @@ export class Client {
 		let stateUrl = incoming.get("state");
 
 		if (incoming.has("state") && !checks.state) {
-			throw new TypeError("Missing Client#callback checks.state");
+			throw new TypeError("Missing Client#oauthCallback checks.state");
 		}
 
 		if (!incoming.has("state") && checks.state) {

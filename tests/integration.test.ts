@@ -48,7 +48,7 @@ describe("Integration tests", () => {
 			client = issuer.client({
 				client_id: "CLIENT_ID",
 				client_secret: "CLIENT_SECRET",
-				redirect_uri: "https://company.ltd/auth/callback",
+				redirect_uri: "https://company.tld/auth/callback",
 				response_type: "code",
 			});
 
@@ -62,7 +62,7 @@ describe("Integration tests", () => {
 			);
 
 			let url = client.authorizationUrl({
-				redirect_uri: "https://company.ltd/auth/callback",
+				redirect_uri: "https://company.tld/auth/callback",
 				state,
 				code_challenge,
 				code_challenge_method: "S256",
@@ -71,7 +71,7 @@ describe("Integration tests", () => {
 			});
 
 			expect(url.toString()).toBe(
-				`https://auth.auth0.com/authorize?response_type=code&client_id=CLIENT_ID&scope=openid+email&redirect_uri=https%3A%2F%2Fcompany.ltd%2Fauth%2Fcallback&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`,
+				`https://auth.auth0.com/authorize?response_type=code&client_id=CLIENT_ID&scope=openid+email&redirect_uri=https%3A%2F%2Fcompany.tld%2Fauth%2Fcallback&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`,
 			);
 		});
 
@@ -89,7 +89,7 @@ describe("Integration tests", () => {
 						expect(params.get("grant_type")).toBe("authorization_code");
 						expect(params.get("code")).toBe("CODE");
 						expect(params.get("redirect_uri")).toBe(
-							"https://company.ltd/auth/callback",
+							"https://company.tld/auth/callback",
 						);
 						expect(params.get("code_verifier")).toBe(code_verifier);
 						expect(params.get("client_id")).toBe("CLIENT_ID");
@@ -109,7 +109,7 @@ describe("Integration tests", () => {
 				),
 			);
 
-			let url = new URL("https://company.ltd/auth/callback");
+			let url = new URL("https://company.tld/auth/callback");
 			url.searchParams.set("state", state);
 			url.searchParams.set("code", "CODE");
 
@@ -118,7 +118,7 @@ describe("Integration tests", () => {
 			let params = await client.callbackParams(request.url);
 
 			let tokens = await client.oauthCallback(
-				new URL("https://company.ltd/auth/callback"),
+				new URL("https://company.tld/auth/callback"),
 				params,
 				{ response_type: "code", state, code_verifier },
 			);

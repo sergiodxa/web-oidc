@@ -1,56 +1,109 @@
-import { describe, expect, test } from "vitest";
-import { Client } from "../src/client";
-import { Issuer } from "../src/issuer";
+import { beforeAll, describe, expect, test } from "vitest";
+import { server } from "./mocks/server";
+import { rest } from "msw";
+import { Client, Issuer, Generator, OIDCError } from "../src";
+import { beforeEach } from "node:test";
 
 describe(Client.name, () => {
-	test.skip("fetches the userinfo", async () => {
-		let google = await Issuer.discover("https://accounts.google.com");
-		let client = new Client(google, {
+	let state = Generator.state();
+	let code_verifier = Generator.codeVerifier();
+
+	let client: Client;
+
+	beforeAll(async () => {
+		server.use(
+			rest.get(
+				"https://auth.company.tld/.well-known/openid-configuration",
+				async (_, res, ctx) => {
+					return res(
+						ctx.json({
+							issuer: "https://auth.company.tld/",
+							authorization_endpoint: "https://auth.company.tld/authorize",
+							token_endpoint: "https://auth.company.tld/oauth/token",
+							userinfo_endpoint: "https://auth.company.tld/userinfo",
+						}),
+					);
+				},
+			),
+		);
+
+		let issuer = await Issuer.discover("https://auth.company.tld");
+		client = issuer.client({
 			client_id: "CLIENT_ID",
 			client_secret: "CLIENT_SECRET",
 			redirect_uri: "https://company.tld/auth/callback",
-			response_type: "code id_token",
-		});
-
-		let userinfo = await client.userinfo("token");
-
-		expect(userinfo).toEqual({
-			sub: "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
-			email: "john.doe@company.tld",
+			response_type: "code",
 		});
 	});
 
-	test("generates the authorization URL", async () => {
-		let google = await Issuer.discover("https://accounts.google.com");
-		let client = new Client(google, {
-			client_id: "CLIENT_ID",
-			client_secret: "CLIENT_SECRET",
-			redirect_uri: "https://company.tld/auth/callback",
-			response_type: "code id_token",
-		});
+	test("fails with missing state check", async () => {
+		let url = new URL("https://company.tld/auth/callback");
+		url.searchParams.set("state", state);
+		url.searchParams.set("code", "CODE");
 
-		let url = client.authorizationUrl({ state: "random" });
+		let request = new Request(url.toString());
 
-		expect(url.toString()).toEqual(
-			"https://accounts.google.com/o/oauth2/v2/auth?response_type=code+id_token&client_id=CLIENT_ID&scope=openid&redirect_uri=https%3A%2F%2Fcompany.tld%2Fauth%2Fcallback&state=random",
+		await expect(async () =>
+			client.oauthCallback(
+				new URL("https://company.tld/auth/callback"),
+				await client.callbackParams(request.url),
+				{ response_type: "code", code_verifier },
+			),
+		).rejects.toThrowError(
+			new TypeError("Missing Client#oauthCallback checks.state"),
 		);
 	});
 
-	test.skip("refresh the access token", async () => {
-		let google = await Issuer.discover("https://accounts.google.com");
-		let client = new Client(google, {
-			client_id: "CLIENT_ID",
-			client_secret: "CLIENT_SECRET",
-			redirect_uri: "https://company.tld/auth/callback",
-			response_type: "code id_token",
-		});
+	test("fails with missing state on URL", async () => {
+		let url = new URL("https://company.tld/auth/callback");
+		url.searchParams.set("code", "CODE");
 
-		let tokenSet = await client.refresh("refresh_token");
+		let request = new Request(url.toString());
 
-		expect(tokenSet.toJSON()).toEqual({
-			access_token: "ACCESS_TOKEN",
-			expires_in: 3599,
-			refresh_token: "REFRESH_TOKEN",
-		});
+		await expect(async () =>
+			client.oauthCallback(
+				new URL("https://company.tld/auth/callback"),
+				await client.callbackParams(request.url),
+				{ response_type: "code", state, code_verifier },
+			),
+		).rejects.toThrowError(new ReferenceError("Missing state on URL."));
+	});
+
+	test("fails with state mismatch", async () => {
+		let url = new URL("https://company.tld/auth/callback");
+		url.searchParams.set("state", "WRONG_STATE");
+		url.searchParams.set("code", "CODE");
+
+		let request = new Request(url.toString());
+
+		await expect(async () =>
+			client.oauthCallback(
+				new URL("https://company.tld/auth/callback"),
+				await client.callbackParams(request.url),
+				{ response_type: "code", state, code_verifier },
+			),
+		).rejects.toThrowError(new ReferenceError("State mismatch."));
+	});
+
+	test("fails with OIDCError", async () => {
+		let url = new URL("https://company.tld/auth/callback");
+		url.searchParams.set("state", state);
+		url.searchParams.set("error", "invalid_request");
+		url.searchParams.set("error_description", "This was a test error.");
+
+		let request = new Request(url.toString());
+
+		await expect(async () =>
+			client.oauthCallback(
+				new URL("https://company.tld/auth/callback"),
+				await client.callbackParams(request.url),
+				{ response_type: "code", state, code_verifier },
+			),
+		).rejects.toThrowError(
+			new OIDCError("invalid_request", {
+				description: "This was a test error.",
+				uri: null,
+			}),
+		);
 	});
 });
