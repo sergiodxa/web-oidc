@@ -251,8 +251,10 @@ export class Client {
 			token: ["access_token", "token_type"],
 		};
 
-		for (let type of checks.response_type ?? []) {
-			if (type === "none") {
+		let responseType = (checks.response_type ?? "none").split(" ");
+
+		for (let type of responseType) {
+			if (checks.response_type === "none") {
 				if (
 					incoming.has("code") ||
 					incoming.has("id_token") ||
