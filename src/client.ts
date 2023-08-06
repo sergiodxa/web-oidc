@@ -76,6 +76,7 @@ export class Client {
 		options: {
 			method: "GET" | "POST";
 			via: "header" | "body";
+			headers?: HeadersInit;
 		} = { method: "GET", via: "header" },
 	): Promise<UserInfo> {
 		let endpoint = assert(this.#issuer, "userinfo_endpoint");
@@ -92,7 +93,7 @@ export class Client {
 
 		let url = new URL(endpoint);
 
-		let headers = new Headers();
+		let headers = new Headers(options.headers);
 		let init: RequestInit = { method, headers };
 
 		let token =
@@ -109,7 +110,7 @@ export class Client {
 			init.body = body;
 		}
 
-		let response = await fetch(url, init);
+		let response = await fetch(url.toString(), init);
 
 		if (!response.ok) {
 			throw new Error("Failed to fetch userinfo", { cause: response });
@@ -156,7 +157,11 @@ export class Client {
 			body.set("client_secret", this.#options.client_secret);
 		}
 
-		let response = await fetch(endpoint, { method: "POST", headers, body });
+		let response = await fetch(endpoint.toString(), {
+			method: "POST",
+			headers,
+			body,
+		});
 
 		if (!response.ok) {
 			let body = await GrantErrorSchema.promise().parse(response.json());
@@ -317,7 +322,7 @@ export class Client {
 			headers.set("authorization", `Bearer ${options.initialAccessToken}`);
 		}
 
-		let response = await fetch(endpoint, {
+		let response = await fetch(endpoint.toString(), {
 			method: "POST",
 			headers,
 			body: JSON.stringify(issuer.metadata),

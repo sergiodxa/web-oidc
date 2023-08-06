@@ -41,7 +41,7 @@ export class Issuer {
 		let url = new URL(uri);
 
 		if (url.pathname.includes("/.well-known/")) {
-			let response = await fetch(url, {
+			let response = await fetch(url.toString(), {
 				method: "GET",
 				headers: { accept: "application/json" },
 			});
@@ -63,10 +63,14 @@ export class Issuer {
 
 		let wellKnownUri = new URL(pathname, url);
 
-		let response = await fetch(wellKnownUri, {
+		let response = await fetch(wellKnownUri.toString(), {
 			method: "GET",
 			headers: { accept: "application/json" },
 		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to discover issuer at ${wellKnownUri}`);
+		}
 
 		let body = await MetadataSchema.promise().parse(response.json());
 
