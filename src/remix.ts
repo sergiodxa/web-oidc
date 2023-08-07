@@ -62,7 +62,7 @@ export class OIDCStrategy<User> extends Strategy<
 		if (url.pathname !== redirectURL.pathname) {
 			let state = Generator.state();
 			let verifier = Generator.codeVerifier();
-			let challenge = await Generator.codeChallenge(verifier);
+			let challenge = Generator.codeChallenge(verifier);
 
 			let session = await sessionStorage.getSession(
 				request.headers.get("cookie"),

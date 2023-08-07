@@ -10,15 +10,16 @@ describe(Generator.name, () => {
 
 	test("generates a random code verifier", () => {
 		let codeVerifier = Generator.codeVerifier();
+
 		expect(codeVerifier).toStrictEqual(expect.any(String));
 		expect(codeVerifier.length).toBeGreaterThanOrEqual(43);
 		expect(codeVerifier.length).toBeLessThanOrEqual(128);
 	});
 
-	test("generates a code challenge from a code verifier", async () => {
+	test("generates a code challenge from a code verifier", () => {
 		let codeVerifier = "code-verifier";
 
-		let codeChallenge = await Generator.codeChallenge(codeVerifier);
+		let codeChallenge = Generator.codeChallenge(codeVerifier);
 
 		expect(codeChallenge).toBe("qdgLLRr1saFHT6DWfWU28VNPIi7e9ynEBnBG3Oadw9g");
 	});

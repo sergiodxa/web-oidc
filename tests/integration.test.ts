@@ -55,11 +55,9 @@ describe("Integration tests", () => {
 			expect(client).toBeInstanceOf(Client);
 		});
 
-		test("creates an authorization URL", async () => {
+		test("creates an authorization URL", () => {
 			let state = Generator.state();
-			let code_challenge = await Generator.codeChallenge(
-				Generator.codeVerifier(),
-			);
+			let code_challenge = Generator.codeChallenge(Generator.codeVerifier());
 
 			let url = client.authorizationUrl({
 				redirect_uri: "https://company.tld/auth/callback",

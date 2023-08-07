@@ -1,4 +1,4 @@
-import { toByteArray, fromByteArray } from "base64-js";
+import cryptoJS from "crypto-js";
 
 export class Generator {
 	static state() {
@@ -6,28 +6,16 @@ export class Generator {
 	}
 
 	static codeVerifier() {
-		return this.random(64);
+		return Generator.random(96);
 	}
 
-	static async codeChallenge(codeVerifier: string) {
-		let buffer = await crypto.subtle.digest(
-			"SHA-256",
-			new TextEncoder().encode(codeVerifier),
-		);
-
-		return fromByteArray(new Uint8Array(buffer))
-			.replace(/\+/g, "-")
-			.replace(/\//g, "_")
-			.replace(/=/g, "");
+	static codeChallenge(codeVerifier: string) {
+		return cryptoJS.SHA256(codeVerifier).toString(cryptoJS.enc.Base64url);
 	}
 
 	private static random(bytes = 32) {
-		let result: string[] = [];
-
-		for (let value of crypto.getRandomValues(new Uint8Array(bytes))) {
-			result.push(value.toString(16).padStart(2, "0"));
-		}
-
-		return result.join("");
+		return cryptoJS.lib.WordArray.random(bytes).toString(
+			cryptoJS.enc.Base64url,
+		);
 	}
 }
