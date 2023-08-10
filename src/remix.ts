@@ -21,6 +21,7 @@ import { TokenSet } from "./token-set";
 
 interface OIDCStrategyVerifyOptions {
 	context?: AppLoadContext;
+	request: Request;
 	profile: UserInfo;
 	tokens: TokenSet;
 	issuer: Issuer;
@@ -115,6 +116,7 @@ export class OIDCStrategy<User> extends Strategy<
 			let profile = await client.userinfo(tokens.access_token);
 
 			let user = await this.verify({
+				request,
 				profile,
 				tokens,
 				context: options.context,

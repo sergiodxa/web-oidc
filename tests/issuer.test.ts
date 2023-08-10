@@ -113,7 +113,7 @@ describe(Issuer.name, () => {
 			],
 			code_challenge_methods_supported: ["S256", "plain"],
 			subject_types_supported: ["public"],
-			id_token_signing_alg_values_supported: ["HS256", "RS256"],
+			id_token_signing_alg_values_supported: ["HS256", "RS256", "PS256"],
 			claims_supported: [
 				"aud",
 				"auth_time",
