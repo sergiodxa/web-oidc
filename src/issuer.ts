@@ -170,7 +170,7 @@ const MetadataSchema = z
 			.optional(),
 		subject_types_supported: z.enum(["public"]).array().optional(),
 		id_token_signing_alg_values_supported: z
-			.enum(["HS256", "RS256"])
+			.enum(["HS256", "RS256", "PS256"])
 			.array()
 			.optional(),
 		claims_supported: z
