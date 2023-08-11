@@ -26,7 +26,7 @@ export class Client {
 	authorizationUrl({
 		redirect_uri = this.#options.redirect_uri,
 		response_type = this.#options.response_type,
-		scope = ["openid"],
+		scope = "openid",
 		client_id = this.#options.client_id,
 		state,
 		...options
@@ -52,7 +52,7 @@ export class Client {
 		// required
 		url.searchParams.set("response_type", response_type);
 		url.searchParams.set("client_id", client_id);
-		url.searchParams.set("scope", scope.join(" "));
+		url.searchParams.set("scope", scope);
 		url.searchParams.set("redirect_uri", redirect_uri);
 		url.searchParams.set("state", state);
 
@@ -404,20 +404,16 @@ const ResponseTypeSchema = z.enum([
 
 type ResponseType = z.infer<typeof ResponseTypeSchema>;
 
-const ScopeSchema = z.enum([
-	"openid",
-	"email",
-	"profile",
-	"address",
-	"phone",
-	"offline_access",
-]);
-
-export type Scope = z.infer<typeof ScopeSchema>;
-
 const AuthenticationRequestParamsSchema = z
 	.object({
-		scope: ScopeSchema.array()
+		scope: z
+			.union([
+				z.string(),
+				z
+					.string()
+					.array()
+					.transform((array) => array.join(" ")),
+			])
 			.refine((scopes) => scopes.includes("openid"), {
 				message: "openid scope is required",
 			})

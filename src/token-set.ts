@@ -6,7 +6,7 @@ export class TokenSet {
 	public expires_in!: number;
 	public id_token: string | undefined;
 	public refresh_token: string | undefined;
-	public scope!: z.infer<typeof ScopeSchema>[];
+	public scope!: string[];
 	public token_type!: string;
 	[key: string]: TokenSetValue[keyof TokenSetValue];
 
@@ -53,27 +53,12 @@ export class TokenSet {
 	}
 }
 
-const ScopeSchema = z.enum([
-	"openid",
-	"email",
-	"profile",
-	"address",
-	"phone",
-	"offline_access",
-]);
-
 export const TokenSetValueSchema = z
 	.object({
 		access_token: z.string(),
 		expires_in: z.number(),
 		id_token: z.string().optional(),
-		scope: z.union([
-			z
-				.string()
-				.transform((scope) => scope.split(" "))
-				.pipe(ScopeSchema.array()),
-			ScopeSchema.array(),
-		]),
+		scope: z.string(),
 		token_type: z
 			.union([z.literal("Bearer"), z.literal("bearer")])
 			.transform((value) => {
