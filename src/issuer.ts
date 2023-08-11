@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Client, ClientOptions } from "./client";
+import { Client, ClientOptions } from "./client.js";
 
 const ISSUER_DEFAULTS: Partial<Metadata> = {
 	claim_types_supported: ["normal"],

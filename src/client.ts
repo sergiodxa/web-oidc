@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Issuer } from "./issuer";
-import { TokenSet, TokenSetValue, TokenSetValueSchema } from "./token-set";
-import { OIDCError } from "./error";
+import { Issuer } from "./issuer.js";
+import { TokenSet, TokenSetValue, TokenSetValueSchema } from "./token-set.js";
+import { OIDCError } from "./error.js";
 
 export interface ClientOptions {
 	client_id: string;

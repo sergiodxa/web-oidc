@@ -1,10 +1,10 @@
 import { Context, type MiddlewareHandler } from "hono";
 import { setCookie, getCookie } from "hono/cookie";
 
-import type { ClientOptions, Client, UserInfo } from "./client";
-import { Issuer } from "./issuer";
-import { TokenSetValue } from "./token-set";
-import { Generator } from "./generator";
+import type { ClientOptions, Client, UserInfo } from "./client.js";
+import { Issuer } from "./issuer.js";
+import { TokenSetValue } from "./token-set.js";
+import { Generator } from "./generator.js";
 
 interface OIDCMiddlewareOptions extends ClientOptions {
 	issuer: Issuer | string | URL;

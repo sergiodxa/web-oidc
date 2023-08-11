@@ -1,5 +1,5 @@
-export { Client, ClientOptions } from "./client";
-export { Generator } from "./generator";
-export { Issuer } from "./issuer";
-export { OIDCError } from "./error";
-export { TokenSet } from "./token-set";
+export { Client, ClientOptions } from "./client.js";
+export { Generator } from "./generator.js";
+export { Issuer } from "./issuer.js";
+export { OIDCError } from "./error.js";
+export { TokenSet } from "./token-set.js";

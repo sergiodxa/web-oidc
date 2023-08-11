@@ -3,7 +3,7 @@ import {
 	Strategy,
 	type StrategyVerifyCallback,
 } from "remix-auth";
-import { Issuer, Metadata } from "./issuer";
+import { Issuer, Metadata } from "./issuer.js";
 import {
 	type AppLoadContext,
 	type SessionStorage,
@@ -15,9 +15,9 @@ import {
 	type ClientOptions,
 	type AuthenticationRequestParams,
 	type Client,
-} from "./client";
-import { Generator } from "./generator";
-import { TokenSet } from "./token-set";
+} from "./client.js";
+import { Generator } from "./generator.js";
+import { TokenSet } from "./token-set.js";
 
 interface OIDCStrategyVerifyOptions {
 	context?: AppLoadContext;
