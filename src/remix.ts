@@ -1,7 +1,7 @@
 import {
 	type AuthenticateOptions,
-	Strategy,
 	type StrategyVerifyCallback,
+	Strategy,
 } from "remix-auth";
 import { Issuer, Metadata } from "./issuer.js";
 import {

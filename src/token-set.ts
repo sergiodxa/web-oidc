@@ -74,7 +74,13 @@ export const TokenSetValueSchema = z
 				.pipe(ScopeSchema.array()),
 			ScopeSchema.array(),
 		]),
-		token_type: z.literal("Bearer"),
+		token_type: z
+			.union([z.literal("Bearer"), z.literal("bearer")])
+			.transform((value) => {
+				let [first, ...rest] = value.split("");
+				return [first.toUpperCase(), ...rest].join("");
+			})
+			.refine((value) => Object.is(value, "Bearer")),
 		refresh_token: z.string().optional(),
 	})
 	.passthrough();
