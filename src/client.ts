@@ -45,9 +45,9 @@ export class Client {
 			});
 		}
 
-		let issuer = this.#issuer.metadata;
+		let endpoint = assert(this.#issuer, "authorization_endpoint");
 
-		let url = new URL(issuer.authorization_endpoint);
+		let url = new URL(endpoint);
 
 		// required
 		url.searchParams.set("response_type", response_type);
@@ -141,7 +141,13 @@ export class Client {
 		return await UserInfoSchema.promise().parse(response.json());
 	}
 
-	async refresh(refreshToken: string | TokenSet) {
+	async refresh(
+		refreshToken: string | TokenSet,
+		{
+			scope,
+			...extra
+		}: { scope?: string; [key: string]: string | undefined } = {},
+	) {
 		let body = new URLSearchParams();
 
 		body.set("grant_type", "refresh_token");
@@ -154,14 +160,55 @@ export class Client {
 			throw new TypeError("Missing refresh_token on Client#refresh");
 		}
 
+		if (scope) body.set("scope", scope);
+
+		for (let key in extra) {
+			let value = extra[key as keyof typeof extra];
+			if (value) body.set(key, value);
+		}
+
 		return await this.grant(body);
 	}
 
-	async clientCredentials(audience: string) {
-		let body = new URLSearchParams({
-			grant_type: "client_credentials",
-			audience,
-		});
+	async clientCredentials({
+		scope,
+		...extra
+	}: { scope?: string; [key: string]: string | undefined } = {}) {
+		let body = new URLSearchParams();
+
+		body.set("grant_type", "client_credentials");
+
+		if (scope) body.set("scope", scope);
+
+		for (let key in extra) {
+			let value = extra[key as keyof typeof extra];
+			if (value) body.set(key, value);
+		}
+
+		return await this.grant(body);
+	}
+
+	async password(
+		username: string,
+		password: string,
+		{
+			scope,
+			...extra
+		}: { scope?: string; [key: string]: string | undefined } = {},
+	) {
+		let body = new URLSearchParams();
+
+		body.set("grant_type", "password");
+
+		body.set("username", username);
+		body.set("password", password);
+
+		if (scope) body.set("scope", scope);
+
+		for (let key in extra) {
+			let value = extra[key as keyof typeof extra];
+			if (value) body.set(key, value);
+		}
 
 		return await this.grant(body);
 	}
@@ -466,7 +513,9 @@ const AuthenticationRequestParamsSchema = z
 		code_challenge: z.string().optional(),
 		code_challenge_method: z.enum(["plain", "S256"]).optional(),
 		display: z.enum(["page", "popup", "touch", "wap"]).optional(),
-		prompt: z.enum(["none", "login", "consent", "select_account"]).optional(),
+		prompt: z
+			.enum(["none", "login", "consent", "select_account", "create"])
+			.optional(),
 		max_age: z.number().optional(),
 		ui_locales: z.string().optional(),
 		id_token_hint: z.string().optional(),
