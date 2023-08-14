@@ -56,7 +56,7 @@ export class TokenSet {
 export const TokenSetValueSchema = z
 	.object({
 		access_token: z.string(),
-		expires_in: z.number(),
+		expires_in: z.number().optional().default(0),
 		id_token: z.string().optional(),
 		scope: z.string(),
 		token_type: z
