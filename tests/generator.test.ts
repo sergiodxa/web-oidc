@@ -8,6 +8,11 @@ describe(Generator.name, () => {
 		expect(state).toStrictEqual(expect.any(String));
 	});
 
+	test("generates a random nonce", () => {
+		let nonce = Generator.nonce();
+		expect(nonce).toStrictEqual(expect.any(String));
+	});
+
 	test("generates a random code verifier", () => {
 		let codeVerifier = Generator.codeVerifier();
 
