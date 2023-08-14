@@ -1,7 +1,11 @@
 /.github
+/coverage
 /src
 /tests
+/.env
 /.gitignore
+/.prettierignore
+/prettier.config.cjs
 /tsconfig.json
 /vitest.config.ts
 /vitest.setup.ts
