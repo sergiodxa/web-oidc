@@ -66,7 +66,7 @@ describe("Integration tests", () => {
 				code_challenge,
 				code_challenge_method: "S256",
 				response_type: "code",
-				scope: "openid email",
+				scope: ["openid", "email"],
 			});
 
 			expect(url.toString()).toBe(

@@ -52,7 +52,7 @@ export class Client {
 		// required
 		url.searchParams.set("response_type", response_type);
 		url.searchParams.set("client_id", client_id);
-		url.searchParams.set("scope", scope);
+		url.searchParams.set("scope", result.data.scope!);
 		url.searchParams.set("redirect_uri", redirect_uri);
 		url.searchParams.set("state", state);
 
