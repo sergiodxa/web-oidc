@@ -502,5 +502,6 @@ const GrantErrorSchema = z.object({
 		"unauthorized_client",
 		"unsupported_grant_type",
 		"invalid_scope",
+		"invalid_dpop_proof",
 	]),
 });
