@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { Client, Issuer, Generator, TokenSet } from "../src";
 import { server } from "./mocks/server";
 import { rest } from "msw";
+import { z } from "zod";
 
 describe("Integration tests", () => {
 	describe("Auth0", () => {
@@ -174,5 +175,119 @@ describe("Integration tests", () => {
 			expect(tokens.id_token).toBe("ID_TOKEN");
 			expect(tokens.refresh_token).toBe("REFRESH_TOKEN");
 		});
+	});
+
+	describe("GitHub", () => {
+		let env = z
+			.object({ GH_CLIENT_ID: z.string(), GH_CLIENT_SECRET: z.string() })
+			.parse(process.env);
+
+		let redirectUri = "http://localhost:3000/auth/github/callback";
+
+		let issuer: Issuer;
+		let client: Client;
+
+		test("creates Issuer", () => {
+			issuer = new Issuer({
+				issuer: "https://github.com",
+				userinfo_endpoint: "https://api.github.com/user",
+				authorization_endpoint: "https://github.com/login/oauth/authorize",
+				token_endpoint: "https://github.com/login/oauth/access_token",
+				device_authorization_endpoint: "https://github.com/login/device/code",
+			});
+
+			expect(issuer).toBeInstanceOf(Issuer);
+			expect(issuer.metadata).toEqual({
+				issuer: "https://github.com",
+				userinfo_endpoint: "https://api.github.com/user",
+				authorization_endpoint: "https://github.com/login/oauth/authorize",
+				token_endpoint: "https://github.com/login/oauth/access_token",
+				device_authorization_endpoint: "https://github.com/login/device/code",
+			});
+		});
+
+		test("creates Client from Issuer", () => {
+			client = issuer.client({
+				client_id: env.GH_CLIENT_ID,
+				client_secret: env.GH_CLIENT_SECRET,
+				redirect_uri: redirectUri,
+				response_type: "code",
+			});
+
+			expect(client).toBeInstanceOf(Client);
+		});
+
+		test("creates an authorization URL", () => {
+			let state = Generator.state();
+			let code_challenge = Generator.codeChallenge(Generator.codeVerifier());
+
+			let url = client.authorizationUrl({
+				redirect_uri: redirectUri,
+				state,
+				code_challenge,
+				code_challenge_method: "S256",
+				response_type: "code",
+				scope: "openid email",
+			});
+
+			expect(url.toString()).toBe(
+				`https://github.com/login/oauth/authorize?response_type=code&client_id=${env.GH_CLIENT_ID}&scope=openid+email&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fgithub%2Fcallback&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`,
+			);
+		});
+
+		test("handles OAuth2 callback", async () => {
+			let state = Generator.state();
+			let code_verifier = Generator.codeVerifier();
+
+			server.use(
+				rest.post(
+					"https://github.com/login/oauth/access_token",
+					async (req, res, ctx) => {
+						let body = await req.text();
+						let params = new URLSearchParams(body);
+
+						expect(params.get("grant_type")).toBe("authorization_code");
+						expect(params.get("code")).toBe("CODE");
+						expect(params.get("redirect_uri")).toBe(redirectUri);
+						expect(params.get("code_verifier")).toBe(code_verifier);
+						expect(params.get("client_id")).toBe(env.GH_CLIENT_ID);
+						expect(params.get("client_secret")).toBe(env.GH_CLIENT_SECRET);
+
+						return res(
+							ctx.json({
+								access_token: "gho_16C7e42F292c6912E7710c838347Ae178B4a",
+								scope: "repo,gist",
+								token_type: "bearer",
+							}),
+						);
+					},
+				),
+			);
+
+			let url = new URL(redirectUri);
+			url.searchParams.set("state", state);
+			url.searchParams.set("code", "CODE");
+
+			let request = new Request(url.toString());
+
+			let params = await client.callbackParams(request.url);
+
+			let tokens = await client.oauthCallback(new URL(redirectUri), params, {
+				response_type: "code",
+				state,
+				code_verifier,
+			});
+
+			expect(tokens).toBeInstanceOf(TokenSet);
+			expect(tokens.access_token).toBe(
+				"gho_16C7e42F292c6912E7710c838347Ae178B4a",
+			);
+			expect(tokens.scope).toBe("repo,gist");
+			expect(tokens.token_type).toBe("Bearer");
+		});
+
+		test.todo("fetches current user profile");
+
+		test.todo("refreshes access token");
 	});
 });
