@@ -1,7 +1,7 @@
 {
 	"name": "web-oidc",
 	"description": "An OpenID Connect client built using only Web APIs",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
