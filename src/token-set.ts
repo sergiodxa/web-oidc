@@ -60,7 +60,7 @@ export const TokenSetValueSchema = z
 		id_token: z.string().optional(),
 		scope: z.string(),
 		token_type: z
-			.union([z.literal("Bearer"), z.literal("bearer")])
+			.enum(["Bearer", "bearer"])
 			.transform((value) => {
 				let [first, ...rest] = value.split("");
 				return [first.toUpperCase(), ...rest].join("");
