@@ -115,7 +115,27 @@ export class Client {
 		let response = await fetch(url.toString(), init);
 
 		if (!response.ok) {
-			throw new Error("Failed to fetch userinfo", { cause: response });
+			let header = response.headers.get("WWW-Authenticate");
+
+			if (!header) {
+				throw new OIDCError("unknown_error", {
+					description: `The request was denied due to an unknown error (status: ${response.status}).`,
+					uri: null,
+				});
+			}
+
+			let code: string;
+			if (!header.startsWith("Bearer ")) {
+				code = "invalid_www_authenticate_header";
+			}
+
+			let params = new URLSearchParams(header.slice(7));
+			code = params.get("error") ?? "unknown_error";
+
+			throw new OIDCError(code, {
+				description: params.get("error_description"),
+				uri: params.get("error_uri"),
+			});
 		}
 
 		return await UserInfoSchema.promise().parse(response.json());
