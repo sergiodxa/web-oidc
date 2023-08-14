@@ -94,6 +94,8 @@ export class Client {
 		let url = new URL(endpoint);
 
 		let headers = new Headers(options.headers);
+		headers.set("accept", "application/json");
+
 		let init: RequestInit = { method, headers };
 
 		let token =
