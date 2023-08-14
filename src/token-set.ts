@@ -6,7 +6,7 @@ export class TokenSet {
 	public expires_in!: number;
 	public id_token: string | undefined;
 	public refresh_token: string | undefined;
-	public scope!: string[];
+	public scope!: string;
 	public token_type!: string;
 	[key: string]: TokenSetValue[keyof TokenSetValue];
 
@@ -43,7 +43,7 @@ export class TokenSet {
 			expires_in: this.expires_in,
 			id_token: this.id_token,
 			refresh_token: this.refresh_token,
-			scope: this.scope.join(" "),
+			scope: this.scope,
 			token_type: this.token_type,
 		};
 	}
