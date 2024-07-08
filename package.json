@@ -60,7 +60,7 @@
 		"remix-auth": "^3.5.0"
 	},
 	"devDependencies": {
-		"@edge-runtime/vm": "^3.0.4",
+		"@edge-runtime/vm": "^4.0.0",
 		"@types/crypto-js": "^4.1.1",
 		"@vitest/coverage-v8": "^1.0.1",
 		"dotenv": "^16.3.1",
