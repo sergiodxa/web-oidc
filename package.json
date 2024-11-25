@@ -57,7 +57,7 @@
 	},
 	"optionalDependencies": {
 		"hono": "^4.0.4",
-		"remix-auth": "^3.5.0"
+		"remix-auth": "^4.0.0"
 	},
 	"devDependencies": {
 		"@edge-runtime/vm": "^4.0.0",
@@ -67,7 +67,7 @@
 		"hono": "^4.0.4",
 		"msw": "^2.0.0",
 		"prettier": "^3.0.0",
-		"remix-auth": "^3.5.0",
+		"remix-auth": "^4.0.0",
 		"typescript": "^5.1.6",
 		"vite-tsconfig-paths": "^5.1.0",
 		"vitest": "^2.0.1"
