@@ -1,6 +1,6 @@
 # Web OIDC
 
-> [!WARN]
+> [!CAUTION]
 > Most of the features here are now supported by the OAuth2Strategy for Remix Auth and the Arctic package used internally by that strategy, this package is now depreacted and if you use it with Remix Auth I recommend you to use the OAuth2Strategy.
 
 An OpenID Connect client for web applications built completely using standard Web APIs.
