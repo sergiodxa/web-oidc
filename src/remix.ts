@@ -58,7 +58,11 @@ export class OIDCStrategy<User> extends Strategy<
 		options: AuthenticateOptions,
 	): Promise<User> {
 		let url = new URL(request.url);
-		let redirectURL = new URL(this.options.redirect_uri);
+		let redirectURL = new URL(
+			this.options.redirect_uri.startsWith("/")
+				? `${url.origin}${this.options.redirect_uri}`
+				: this.options.redirect_uri,
+		);
 
 		if (url.pathname !== redirectURL.pathname) {
 			let state = Generator.state();
@@ -81,6 +85,7 @@ export class OIDCStrategy<User> extends Strategy<
 				...this.options.authorizationParams,
 				code_challenge: challenge,
 				code_challenge_method: "S256",
+				redirect_uri: redirectURL.toString(),
 			});
 
 			throw redirect(url.toString(), {
